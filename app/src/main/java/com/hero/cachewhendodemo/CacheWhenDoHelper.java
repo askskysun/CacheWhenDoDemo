@@ -26,7 +26,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *      2、Builder中的默认值
  *      3、操作事件的处理接口：上下文为appcation时使用 DoOperationInterface；否则使用 LiveEventBus，防止内存泄漏
  * </pre>
- * Author by sunhaihong, Email 1910713921@qq.com, Date on 2023/8/1.
+ * Author by sun, Email 1910713921@qq.com, Date on 2023/8/1.
  */
 public class CacheWhenDoHelper {
     private static final String TAG = "CacheWhenDoHelper";
@@ -75,7 +75,12 @@ public class CacheWhenDoHelper {
     //获取读锁
     private Lock rLock = rwLock.readLock();
 
-    public void doCacheWhen(@NonNull String idEvent, @NonNull OnParameterCacheCallBack onParameterCacheCallBack) {
+    /**
+     * 执行操作
+     * @param idEvent   操作事件的id，记录执行操作的位置，操作回调会返回此id
+     * @param onCreateParameterCache   创建缓存数据，作为结果返回
+     */
+    public void doCacheWhen(@NonNull String idEvent, @NonNull OnCreateParameterCache onCreateParameterCache) {
         if (ISDEBUG) {
             Log.i(TAG, ("进入方法 doCacheWhen  idEvent:" + idEvent));
         }
@@ -86,7 +91,7 @@ public class CacheWhenDoHelper {
                 Log.i(TAG, ("准备缓存数据 上个数据: " + javabeanToJson(cacheWhenDoData)));
             }
             //此处已经赋值变量对应关系，第二次进入方法就已经赋值
-            this.cacheWhenDoData = new CacheWhenDoData(idEvent, onParameterCacheCallBack.onParameterCacheCallBack());
+            this.cacheWhenDoData = new CacheWhenDoData(idEvent, onCreateParameterCache.onCreateParameterCache());
             eventIdList.add(cacheWhenDoData.getId());
 
             if (ISDEBUG) {
@@ -266,7 +271,7 @@ public class CacheWhenDoHelper {
          * 处理定时做的事情
          *
          * @param cloneData   复制之后的缓存数据
-         * @param eventIdList 事件列表
+         * @param eventIdList 调用事件列表
          */
         void doOperation(ParameterCache cloneData, List<String> eventIdList);
     }
@@ -277,7 +282,7 @@ public class CacheWhenDoHelper {
     public static class Builder {
 
         /**
-         * 停止方式   false 为 shutdownNow
+         * 停止方式,正在执行的任务会继续执行下去，没有被执行的则中断   false 为 shutdownNow
          */
         private boolean isShutdown;
 
@@ -384,8 +389,8 @@ public class CacheWhenDoHelper {
         public abstract ParameterCache clone();
     }
 
-    public interface OnParameterCacheCallBack {
-        ParameterCache onParameterCacheCallBack();
+    public interface OnCreateParameterCache {
+        ParameterCache onCreateParameterCache();
     }
 
     public static class EventData {
