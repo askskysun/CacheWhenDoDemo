@@ -14,6 +14,10 @@ import java.util.concurrent.TimeUnit;
  * 配置
  */
 public class Builder {
+    /**
+     * 是否调试
+     */
+     boolean isDebug;
 
     /**
      * 停止方式,正在执行的任务会继续执行下去，没有被执行的则中断   false 为 shutdownNow
@@ -50,6 +54,11 @@ public class Builder {
      * 上下文为appcation时使用，防止内存泄漏
      */
      WeakReference<DoOperationInterface> doOperationInterfaceWeakRef;
+
+    public Builder setDebug(boolean isDebug) {
+        this.isDebug = isDebug;
+        return this;
+    }
 
     /**
      * 操作事件的处理接口

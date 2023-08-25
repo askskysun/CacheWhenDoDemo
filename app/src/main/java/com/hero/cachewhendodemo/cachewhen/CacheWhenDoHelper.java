@@ -34,10 +34,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class CacheWhenDoHelper {
 
     private static final String TAG = "CacheWhenDoHelper";
-    /**
-     * 是否调试
-     */
-    private static boolean ISDEBUG = true;
     public static final String LIVEEVENTBUS_KEY = "CacheWhenDoHelper";
     private Builder builder = new Builder();
 
@@ -45,7 +41,7 @@ public class CacheWhenDoHelper {
         if (builder != null) {
             this.builder = builder;
         }
-        if (ISDEBUG) {
+        if (this.builder.isDebug) {
             Log.i(TAG, "配置builder：" + JsonUtils.javabeanToJson(this.builder));
         }
     }
@@ -190,27 +186,27 @@ public class CacheWhenDoHelper {
     }
 
     private void doCacheWhen(@NonNull String idEvent, @NonNull ParameterCache parameterCache) {
-        if (ISDEBUG) {
+        if (builder.isDebug) {
             Log.i(TAG, ("进入方法 doCacheWhen  idEvent:" + idEvent));
         }
 
         wlock.lock();
         try {
-            if (ISDEBUG) {
+            if (builder.isDebug) {
                 Log.i(TAG, ("准备缓存数据 上个数据: " + JsonUtils.javabeanToJson(cacheWhenDoData)));
             }
             //此处已经赋值变量对应关系，第二次进入方法就已经赋值
             this.cacheWhenDoData = new CacheWhenDoData(idEvent, parameterCache);
             eventIdList.add(cacheWhenDoData.getId());
 
-            if (ISDEBUG) {
+            if (builder.isDebug) {
                 Log.i(TAG, "缓存数据: " + JsonUtils.javabeanToJson(cacheWhenDoData)
                         + "\n eventIdList:" + JsonUtils.javabeanToJson(eventIdList));
             }
 
         } catch (Exception exception) {
             exception.printStackTrace();
-            if (ISDEBUG) {
+            if (builder.isDebug) {
                 Log.e(TAG, "进入方法 缓存 doCacheWhen", exception);
             }
         } finally {
@@ -231,7 +227,7 @@ public class CacheWhenDoHelper {
                     //复制一份
                     clone = data.clone();
                     copyEventIdList.addAll(eventIdList);
-                    if (ISDEBUG) {
+                    if (builder.isDebug) {
                         Log.i(TAG, "每一秒钟执行  复制一份 clone: " + JsonUtils.javabeanToJson(clone)
                                 + "\n copyEventIdList:" + JsonUtils.javabeanToJson(copyEventIdList));
                     }
@@ -241,20 +237,20 @@ public class CacheWhenDoHelper {
             cacheWhenDoData = null;
         } catch (Exception exception) {
             exception.printStackTrace();
-            if (ISDEBUG) {
+            if (builder.isDebug) {
                 Log.e(TAG, "每一秒钟执行 复制并清除缓存 doWhen", exception);
             }
         } finally {
             wlock.unlock();
         }
-        if (ISDEBUG) {
+        if (builder.isDebug) {
             Log.i(TAG, "每一秒钟执行 清除缓存 cacheWhenDoData: " + JsonUtils.javabeanToJson(cacheWhenDoData)
                     + "\n eventIdList:" + JsonUtils.javabeanToJson(eventIdList));
         }
 
         if (clone == null || copyEventIdList.isEmpty()) {
             stop();
-            if (ISDEBUG) {
+            if (builder.isDebug) {
                 Log.i(TAG, "每一秒钟执行 无缓存数据 停止");
             }
             return;
@@ -267,7 +263,7 @@ public class CacheWhenDoHelper {
             eventData.setIdList(copyEventIdList);
             LiveEventBus.get(LIVEEVENTBUS_KEY).post(eventData);
         }
-        if (ISDEBUG) {
+        if (builder.isDebug) {
             Log.i(TAG, "每一秒钟执行 执行完成或者已发送事件");
         }
     }
@@ -289,13 +285,13 @@ public class CacheWhenDoHelper {
                     scheduler.scheduleAtFixedRate(() -> {
                         Log.i(TAG, "每一秒钟执行start: ");
                         try {
-                            if (ISDEBUG) {
+                            if (builder.isDebug) {
                                 Log.i(TAG, "每一秒钟执行 start() Thread:" + Thread.currentThread() + " cacheWhenDoData ： " + JsonUtils.javabeanToJson(cacheWhenDoData));
                             }
                             doWhen();
                         } catch (Exception e) {
                             e.printStackTrace();
-                            if (ISDEBUG) {
+                            if (builder.isDebug) {
                                 Log.e(TAG, "每一秒钟执行 start() scheduleAtFixedRate", e);
                             }
                         }
@@ -305,13 +301,13 @@ public class CacheWhenDoHelper {
 
                 scheduler.scheduleWithFixedDelay(() -> {
                     try {
-                        if (ISDEBUG) {
+                        if (builder.isDebug) {
                             Log.i(TAG, "每一秒钟执行 start() Thread:" + Thread.currentThread() + " cacheWhenDoData ： " + JsonUtils.javabeanToJson(cacheWhenDoData));
                         }
                         doWhen();
                     } catch (Exception e) {
                         e.printStackTrace();
-                        if (ISDEBUG) {
+                        if (builder.isDebug) {
                             Log.e(TAG, "每一秒钟执行 start() scheduleWithFixedDelay", e);
                         }
                     }
@@ -319,7 +315,7 @@ public class CacheWhenDoHelper {
             }
         } catch (Exception exception) {
             exception.printStackTrace();
-            if (ISDEBUG) {
+            if (builder.isDebug) {
                 Log.e(TAG, " start()", exception);
             }
         } finally {
@@ -331,7 +327,7 @@ public class CacheWhenDoHelper {
      *
      */
     public synchronized void stop() {
-        if (ISDEBUG) {
+        if (builder.isDebug) {
             Log.i(TAG, " stop()");
         }
 
@@ -350,7 +346,7 @@ public class CacheWhenDoHelper {
             scheduler = null;
         } catch (Exception exception) {
             exception.printStackTrace();
-            if (ISDEBUG) {
+            if (builder.isDebug) {
                 Log.e(TAG, " stop()", exception);
             }
         } finally {

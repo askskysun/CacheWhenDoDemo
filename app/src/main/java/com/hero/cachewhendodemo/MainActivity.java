@@ -62,6 +62,8 @@ public class MainActivity extends FragmentActivity implements DoOperationInterfa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         cacheWhenDoHelper1 = CacheWhenDoHelper.getInstance()
+                //是否进行调试
+                .setDebug(true)
                 //延迟启动时间
                 .setInitialDelay(1)
                 //循环执行是否等待上一个执行完毕
@@ -80,6 +82,8 @@ public class MainActivity extends FragmentActivity implements DoOperationInterfa
                 .build();
 
         cacheWhenDoHelper2 = CacheWhenDoHelper.getInstance()
+                //是否进行调试
+                .setDebug(true)
                 .setAtFixed(false)
                 .setThreadCount(9)
                 .setPeriod(200)
@@ -88,6 +92,8 @@ public class MainActivity extends FragmentActivity implements DoOperationInterfa
                 .build();
 
         cacheWhenDoHelper3 = CacheWhenDoHelper.getInstance()
+                //是否进行调试
+                .setDebug(true)
                 .setAtFixed(false)
                 .setThreadCount(9)
                 .setPeriod(200)
