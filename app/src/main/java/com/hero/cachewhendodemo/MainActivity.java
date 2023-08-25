@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+
+import com.hero.cachewhendodemo.cachewhen.CacheWhenContants;
 import com.hero.cachewhendodemo.cachewhen.CacheWhenDoHelper;
 import com.hero.cachewhendodemo.cachewhen.DoOperationInterface;
 import com.hero.cachewhendodemo.cachewhen.EventData;
@@ -35,8 +37,8 @@ public class MainActivity extends FragmentActivity implements DoOperationInterfa
             if (!(cloneData instanceof SimpleParameterCache)) {
                 return;
             }
-            //获取参数
-            Object data = ((SimpleParameterCache) cloneData).getData();
+            //获取参数 其中传入泛型要与参数类型一致
+            String data = ((SimpleParameterCache<String>) cloneData).getData();
             //此处模拟一个耗时操作
             int imax = 0;
             int jmax = 0;
@@ -104,7 +106,7 @@ public class MainActivity extends FragmentActivity implements DoOperationInterfa
                 .setDoOperationInterface(doOperationInterface3)
                 .build();
 
-        LiveEventBus.get(CacheWhenDoHelper.LIVEEVENTBUS_KEY, EventData.class)
+        LiveEventBus.get(CacheWhenContants.LIVEEVENTBUS_KEY, EventData.class)
                 .observe(this, new Observer<EventData>() {
                     @Override
                     public void onChanged(EventData eventData) {

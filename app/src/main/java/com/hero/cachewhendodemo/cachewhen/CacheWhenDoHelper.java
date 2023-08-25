@@ -29,12 +29,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *      2、Builder中的默认值
  *      3、操作事件的处理接口：上下文为appcation时使用 DoOperationInterface；否则使用 LiveEventBus，防止内存泄漏
  * </pre>
- * Author by sun, Email 1910713921@qq.com, Date on 2023/8/1.
  */
 public class CacheWhenDoHelper {
 
     private static final String TAG = "CacheWhenDoHelper";
-    public static final String LIVEEVENTBUS_KEY = "CacheWhenDoHelper";
     private Builder builder = new Builder();
 
     public CacheWhenDoHelper(Builder builder) {
@@ -261,7 +259,7 @@ public class CacheWhenDoHelper {
             EventData eventData = new EventData();
             eventData.setClone(clone);
             eventData.setIdList(copyEventIdList);
-            LiveEventBus.get(LIVEEVENTBUS_KEY).post(eventData);
+            LiveEventBus.get(CacheWhenContants.LIVEEVENTBUS_KEY).post(eventData);
         }
         if (builder.isDebug) {
             Log.i(TAG, "每一秒钟执行 执行完成或者已发送事件");

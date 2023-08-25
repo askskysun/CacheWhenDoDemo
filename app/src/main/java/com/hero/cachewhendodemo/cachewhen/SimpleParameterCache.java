@@ -1,17 +1,12 @@
 package com.hero.cachewhendodemo.cachewhen;
 
-/**
- * <pre>
- *
- * </pre>
- * Author by sunhaihong, Email 1910713921@qq.com, Date on 2023/8/25.
- */
+import java.lang.reflect.Field;
 
 /**
  * 重写缓存类
  * 保存操作的数据作为属性，可以自由包装
  */
-public class SimpleParameterCache extends ParameterCache {
+public class SimpleParameterCache<T> extends ParameterCache {
 
     private Integer aInteger;
     private Long aLong;
@@ -54,35 +49,33 @@ public class SimpleParameterCache extends ParameterCache {
         this.aString = aString;
     }
 
-    public Object getData() {
-        if (aInteger != null) {
-            return aInteger;
-        }
-        if (aLong != null) {
-            return aLong;
-        }
-        if (aDouble != null) {
-            return aDouble;
-        }
-        if (aFloat != null) {
-            return aFloat;
-        }
-
-        if (aShort != null) {
-            return aShort;
-        }
-        if (aByte != null) {
-            return aByte;
-        }
-        if (aBoolean != null) {
-            return aBoolean;
-        }
-        if (aString != null) {
-            return aString;
+    /**
+     * 泛型要与操作参数类型一致 CacheWhenDoHelper.doCacheWhen
+     *
+     * @return
+     */
+    public T getData() {
+        try {
+            Class clazz = this.getClass();
+            //能获取该类中所有的属性，但是不能获取父类的属性
+            Field[] fields = clazz.getDeclaredFields();
+            for (Field field : fields) {
+                //设置即使该属性是private，也可以进行访问(默认是false)
+                field.setAccessible(true);
+                Object value = field.get(this);
+                if (value == null) {
+                    continue;
+                }
+                T valueT = ((T) value);
+                return valueT;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return null;
     }
+
 
     /**
      * 此类一定要实现  复制一份数据，不影响原数据
