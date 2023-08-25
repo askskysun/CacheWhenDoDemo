@@ -1,10 +1,13 @@
-package com.hero.cachewhendodemo;
+package com.hero.cachewhendodemo.cachewhen;
 
 import android.util.Log;
+
 import androidx.annotation.NonNull;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jeremyliao.liveeventbus.LiveEventBus;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +32,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * Author by sun, Email 1910713921@qq.com, Date on 2023/8/1.
  */
 public class CacheWhenDoHelper {
+
     private static final String TAG = "CacheWhenDoHelper";
     /**
      * 是否调试
@@ -42,7 +46,7 @@ public class CacheWhenDoHelper {
             this.builder = builder;
         }
         if (ISDEBUG) {
-            Log.i(TAG, "配置builder：" + javabeanToJson(this.builder));
+            Log.i(TAG, "配置builder：" + JsonUtils.javabeanToJson(this.builder));
         }
     }
 
@@ -77,10 +81,115 @@ public class CacheWhenDoHelper {
 
     /**
      * 执行操作
-     * @param idEvent   操作事件的id，记录执行操作的位置，操作回调会返回此id
-     * @param onCreateParameterCache   创建缓存数据，作为结果返回
+     *
+     * @param idEvent  操作事件的id，记录执行操作的位置，操作回调会返回此id
+     * @param byteData 创建缓存数据，作为结果返回
      */
+    public void doCacheWhen(@NonNull String idEvent, @NonNull Byte byteData) {
+        doCacheWhenCommon(idEvent, byteData);
+    }
+
+    /**
+     * 执行操作
+     *
+     * @param idEvent   操作事件的id，记录执行操作的位置，操作回调会返回此id
+     * @param shortData 创建缓存数据，作为结果返回
+     */
+    public void doCacheWhen(@NonNull String idEvent, @NonNull Short shortData) {
+        doCacheWhenCommon(idEvent, shortData);
+    }
+
+    /**
+     * 执行操作
+     *
+     * @param idEvent     操作事件的id，记录执行操作的位置，操作回调会返回此id
+     * @param integerData 创建缓存数据，作为结果返回
+     */
+    public void doCacheWhen(@NonNull String idEvent, @NonNull Integer integerData) {
+        doCacheWhenCommon(idEvent, integerData);
+    }
+
+    /**
+     * 执行操作
+     *
+     * @param idEvent  操作事件的id，记录执行操作的位置，操作回调会返回此id
+     * @param longData 创建缓存数据，作为结果返回
+     */
+    public void doCacheWhen(@NonNull String idEvent, @NonNull Long longData) {
+        doCacheWhenCommon(idEvent, longData);
+    }
+
+    /**
+     * 执行操作
+     *
+     * @param idEvent   操作事件的id，记录执行操作的位置，操作回调会返回此id
+     * @param floatData 创建缓存数据，作为结果返回
+     */
+    public void doCacheWhen(@NonNull String idEvent, @NonNull Float floatData) {
+        doCacheWhenCommon(idEvent, floatData);
+    }
+
+    /**
+     * 执行操作
+     *
+     * @param idEvent    操作事件的id，记录执行操作的位置，操作回调会返回此id
+     * @param doubleData 创建缓存数据，作为结果返回
+     */
+    public void doCacheWhen(@NonNull String idEvent, @NonNull Double doubleData) {
+        doCacheWhenCommon(idEvent, doubleData);
+    }
+
+    /**
+     * 执行操作
+     *
+     * @param idEvent     操作事件的id，记录执行操作的位置，操作回调会返回此id
+     * @param booleanData 创建缓存数据，作为结果返回
+     */
+    public void doCacheWhen(@NonNull String idEvent, @NonNull Boolean booleanData) {
+        doCacheWhenCommon(idEvent, booleanData);
+    }
+
+    /**
+     * 执行操作
+     *
+     * @param idEvent     操作事件的id，记录执行操作的位置，操作回调会返回此id
+     * @param stringData 创建缓存数据，作为结果返回
+     */
+    public void doCacheWhen(@NonNull String idEvent, @NonNull String stringData) {
+        doCacheWhenCommon(idEvent, stringData);
+    }
+
     public void doCacheWhen(@NonNull String idEvent, @NonNull OnCreateParameterCache onCreateParameterCache) {
+        doCacheWhenCommon(idEvent, onCreateParameterCache);
+    }
+
+    private void doCacheWhenCommon(@NonNull String idEvent, @NonNull Object object) {
+        SimpleParameterCache simpleParameterCache = null;
+        if (object instanceof Integer) {
+            simpleParameterCache = new SimpleParameterCache((Integer) object);
+        } else if (object instanceof Long) {
+            simpleParameterCache = new SimpleParameterCache((Long) object);
+        } else if (object instanceof Double) {
+            simpleParameterCache = new SimpleParameterCache((Double) object);
+        } else if (object instanceof Float) {
+            simpleParameterCache = new SimpleParameterCache((Float) object);
+        }  else if (object instanceof Short) {
+            simpleParameterCache = new SimpleParameterCache((Short) object);
+        } else if (object instanceof Byte) {
+            simpleParameterCache = new SimpleParameterCache((Byte) object);
+        } else if (object instanceof Boolean) {
+            simpleParameterCache = new SimpleParameterCache((Boolean) object);
+        } else if (object instanceof String) {
+            simpleParameterCache = new SimpleParameterCache((String) object);
+        } else if (object instanceof OnCreateParameterCache) {
+            doCacheWhen(idEvent, ((OnCreateParameterCache) object).onCreateParameterCache());
+        }
+        if (simpleParameterCache != null) {
+            doCacheWhen(idEvent, simpleParameterCache);
+        }
+    }
+
+    private void doCacheWhen(@NonNull String idEvent, @NonNull ParameterCache parameterCache) {
         if (ISDEBUG) {
             Log.i(TAG, ("进入方法 doCacheWhen  idEvent:" + idEvent));
         }
@@ -88,15 +197,15 @@ public class CacheWhenDoHelper {
         wlock.lock();
         try {
             if (ISDEBUG) {
-                Log.i(TAG, ("准备缓存数据 上个数据: " + javabeanToJson(cacheWhenDoData)));
+                Log.i(TAG, ("准备缓存数据 上个数据: " + JsonUtils.javabeanToJson(cacheWhenDoData)));
             }
             //此处已经赋值变量对应关系，第二次进入方法就已经赋值
-            this.cacheWhenDoData = new CacheWhenDoData(idEvent, onCreateParameterCache.onCreateParameterCache());
+            this.cacheWhenDoData = new CacheWhenDoData(idEvent, parameterCache);
             eventIdList.add(cacheWhenDoData.getId());
 
             if (ISDEBUG) {
-                Log.i(TAG, "缓存数据: " + javabeanToJson(cacheWhenDoData)
-                        + "\n eventIdList:" + javabeanToJson(eventIdList));
+                Log.i(TAG, "缓存数据: " + JsonUtils.javabeanToJson(cacheWhenDoData)
+                        + "\n eventIdList:" + JsonUtils.javabeanToJson(eventIdList));
             }
 
         } catch (Exception exception) {
@@ -123,8 +232,8 @@ public class CacheWhenDoHelper {
                     clone = data.clone();
                     copyEventIdList.addAll(eventIdList);
                     if (ISDEBUG) {
-                        Log.i(TAG, "每一秒钟执行  复制一份 clone: " + javabeanToJson(clone)
-                                + "\n copyEventIdList:" + javabeanToJson(copyEventIdList));
+                        Log.i(TAG, "每一秒钟执行  复制一份 clone: " + JsonUtils.javabeanToJson(clone)
+                                + "\n copyEventIdList:" + JsonUtils.javabeanToJson(copyEventIdList));
                     }
                 }
             }
@@ -139,8 +248,8 @@ public class CacheWhenDoHelper {
             wlock.unlock();
         }
         if (ISDEBUG) {
-            Log.i(TAG, "每一秒钟执行 清除缓存 cacheWhenDoData: " + javabeanToJson(cacheWhenDoData)
-                    + "\n eventIdList:" + javabeanToJson(eventIdList));
+            Log.i(TAG, "每一秒钟执行 清除缓存 cacheWhenDoData: " + JsonUtils.javabeanToJson(cacheWhenDoData)
+                    + "\n eventIdList:" + JsonUtils.javabeanToJson(eventIdList));
         }
 
         if (clone == null || copyEventIdList.isEmpty()) {
@@ -181,7 +290,7 @@ public class CacheWhenDoHelper {
                         Log.i(TAG, "每一秒钟执行start: ");
                         try {
                             if (ISDEBUG) {
-                                Log.i(TAG, "每一秒钟执行 start() Thread:" + Thread.currentThread() + " cacheWhenDoData ： " + javabeanToJson(cacheWhenDoData));
+                                Log.i(TAG, "每一秒钟执行 start() Thread:" + Thread.currentThread() + " cacheWhenDoData ： " + JsonUtils.javabeanToJson(cacheWhenDoData));
                             }
                             doWhen();
                         } catch (Exception e) {
@@ -197,7 +306,7 @@ public class CacheWhenDoHelper {
                 scheduler.scheduleWithFixedDelay(() -> {
                     try {
                         if (ISDEBUG) {
-                            Log.i(TAG, "每一秒钟执行 start() Thread:" + Thread.currentThread() + " cacheWhenDoData ： " + javabeanToJson(cacheWhenDoData));
+                            Log.i(TAG, "每一秒钟执行 start() Thread:" + Thread.currentThread() + " cacheWhenDoData ： " + JsonUtils.javabeanToJson(cacheWhenDoData));
                         }
                         doWhen();
                     } catch (Exception e) {
@@ -246,171 +355,6 @@ public class CacheWhenDoHelper {
             }
         } finally {
             reentrantLock.unlock();
-        }
-    }
-
-    public static String javabeanToJson(Object obj) {
-        try {
-            Gson gson = new GsonBuilder().disableHtmlEscaping().create();
-            String json = gson.toJson(obj);
-            return json != null ? json : "";
-        } catch (Exception e) {
-            e.printStackTrace();
-            if (ISDEBUG) {
-                Log.e(TAG, " javabeanToJson()", e);
-            }
-            return "";
-        }
-    }
-
-    /**
-     * 操作事件的处理接口
-     */
-    public interface DoOperationInterface {
-        /**
-         * 处理定时做的事情
-         *
-         * @param cloneData   复制之后的缓存数据
-         * @param eventIdList 调用事件列表
-         */
-        void doOperation(ParameterCache cloneData, List<String> eventIdList);
-    }
-
-    /**
-     * 配置
-     */
-    public static class Builder {
-
-        /**
-         * 停止方式,正在执行的任务会继续执行下去，没有被执行的则中断   false 为 shutdownNow
-         */
-        private boolean isShutdown;
-
-        /**
-         * 循环执行是否等待上一个执行完毕  false 为 scheduleWithFixedDelay
-         */
-        private boolean isAtFixed;
-
-        /**
-         * 循环时间
-         */
-        private long period = 1;
-
-        /**
-         * 延迟启动时间
-         */
-        private long initialDelay;
-
-        /**
-         * 单位
-         */
-        private TimeUnit unit = TimeUnit.SECONDS;
-
-        /**
-         * 默认线程数
-         */
-        private int threadCount = 3;
-
-        /**
-         * 操作事件的处理接口
-         * 上下文为appcation时使用，防止内存泄漏
-         */
-        private WeakReference<DoOperationInterface> doOperationInterfaceWeakRef;
-
-        /**
-         * 操作事件的处理接口
-         * 注意此处使用弱引用 所以不要以局部变量作为参数，否则很快被回收
-         */
-        public Builder setDoOperationInterface(DoOperationInterface doOperationInterface) {
-            doOperationInterfaceWeakRef = new WeakReference<>(doOperationInterface);
-            return this;
-        }
-
-        public Builder setShutdown(boolean shutdown) {
-            isShutdown = shutdown;
-            return this;
-        }
-
-        public Builder setAtFixed(boolean atFixed) {
-            isAtFixed = atFixed;
-            return this;
-        }
-
-        public Builder setPeriod(long period) {
-            this.period = period;
-            return this;
-        }
-
-        public Builder setInitialDelay(long initialDelay) {
-            this.initialDelay = initialDelay;
-            return this;
-        }
-
-        public Builder setUnit(TimeUnit unit) {
-            if (unit != null) {
-                this.unit = unit;
-            }
-            return this;
-        }
-
-        public Builder setThreadCount(int threadCount) {
-            if (threadCount > 0) {
-                this.threadCount = threadCount;
-            }
-            return this;
-        }
-
-        public CacheWhenDoHelper build() {
-            return new CacheWhenDoHelper(this);
-        }
-    }
-
-    public static class CacheWhenDoData {
-
-        private String id;
-        private ParameterCache data;
-
-        public CacheWhenDoData(String id, ParameterCache data) {
-            this.id = id;
-            this.data = data;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public ParameterCache getData() {
-            return data;
-        }
-    }
-
-    public static abstract class ParameterCache implements Cloneable {
-        @Override
-        public abstract ParameterCache clone();
-    }
-
-    public interface OnCreateParameterCache {
-        ParameterCache onCreateParameterCache();
-    }
-
-    public static class EventData {
-        private ParameterCache clone;
-        private List<String> idList;
-
-        public ParameterCache getClone() {
-            return clone;
-        }
-
-        public void setClone(ParameterCache clone) {
-            this.clone = clone;
-        }
-
-        public List<String> getIdList() {
-            return idList;
-        }
-
-        public void setIdList(List<String> idList) {
-            this.idList = idList;
         }
     }
 }
