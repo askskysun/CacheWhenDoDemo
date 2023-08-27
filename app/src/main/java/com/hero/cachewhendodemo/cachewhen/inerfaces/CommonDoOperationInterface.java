@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * 操作事件的处理接口
  */
-public interface DoOperationInterface {
+public interface CommonDoOperationInterface extends BaseDoOperationInterface{
     /**
      * 处理定时做的事情
      *

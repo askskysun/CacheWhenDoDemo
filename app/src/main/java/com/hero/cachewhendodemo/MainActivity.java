@@ -8,37 +8,38 @@ import android.util.Log;
 import android.view.View;
 
 import com.hero.cachewhendodemo.cachewhen.CacheWhenContants;
-import com.hero.cachewhendodemo.cachewhen.CacheWhenDoHelper;
-import com.hero.cachewhendodemo.cachewhen.inerfaces.DoOperationInterface;
-import com.hero.cachewhendodemo.cachewhen.bean.EventDataBean;
+import com.hero.cachewhendodemo.cachewhen.bean.CommonEventDataBean;
+import com.hero.cachewhendodemo.cachewhen.bean.SimpleEventDataBean;
+import com.hero.cachewhendodemo.cachewhen.helper.CommonCacheWhenDoHelper;
+import com.hero.cachewhendodemo.cachewhen.helper.SimpleCacheWhenDaHelper;
+import com.hero.cachewhendodemo.cachewhen.bean.base.BaseEventDataBean;
 import com.hero.cachewhendodemo.cachewhen.JsonUtils;
+import com.hero.cachewhendodemo.cachewhen.inerfaces.CommonDoOperationInterface;
 import com.hero.cachewhendodemo.cachewhen.inerfaces.OnCreateParameterCache;
 import com.hero.cachewhendodemo.cachewhen.bean.base.BaseParameterCacheBean;
 import com.hero.cachewhendodemo.cachewhen.bean.SimpleParameterCacheBean;
+import com.hero.cachewhendodemo.cachewhen.inerfaces.SimpleDoOperationInterface;
 import com.jeremyliao.liveeventbus.LiveEventBus;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class MainActivity extends FragmentActivity implements DoOperationInterface {
+public class MainActivity extends FragmentActivity implements CommonDoOperationInterface {
 
     private String TAG = "MainActivity";
-    private CacheWhenDoHelper cacheWhenDoHelper1;
-    private CacheWhenDoHelper cacheWhenDoHelper2;
-    private CacheWhenDoHelper cacheWhenDoHelper3;
-    private DoOperationInterface doOperationInterface3 = new DoOperationInterface() {
+    private CommonCacheWhenDoHelper cacheWhenDoHelper1;
+    private CommonCacheWhenDoHelper cacheWhenDoHelper2;
+    private SimpleCacheWhenDaHelper<String> cacheWhenDoHelper3;
+    private SimpleCacheWhenDaHelper<Integer> cacheWhenDoHelper4;
+    private SimpleDoOperationInterface<String> doOperationInterface3 = new SimpleDoOperationInterface<String>() {
         @Override
-        public void doOperation(BaseParameterCacheBean cloneData, List<String> eventIdList) {
+        public void doOperation(String cloneData, List<String> eventIdList) {
             Log.i(TAG, "每一秒钟执行 拿到缓存数据，开始执行操作  cacheWhenDoHelper3  doOperation 回调  cloneData："
                     + JsonUtils.javabeanToJson(cloneData));
             if (cloneData == null) {
                 return;
             }
-            if (!(cloneData instanceof SimpleParameterCacheBean)) {
-                return;
-            }
-            //获取参数 其中传入泛型要与参数类型一致
-            String data = ((SimpleParameterCacheBean<String>) cloneData).getData();
+
             //此处模拟一个耗时操作
             int imax = 0;
             int jmax = 0;
@@ -50,7 +51,7 @@ public class MainActivity extends FragmentActivity implements DoOperationInterfa
             }
 
             Log.i(TAG, "每一秒钟执行 处理完成 cacheWhenDoHelper3  doOperation 回调 ：eventIdList:" + JsonUtils.javabeanToJson(eventIdList)
-                    + "\n 结果:" + data + imax + jmax);
+                    + "\n 结果:" + cloneData + imax + jmax);
 
             for (int i = 0; i < eventIdList.size(); i++) {
                 String eventId = eventIdList.get(i);
@@ -63,7 +64,7 @@ public class MainActivity extends FragmentActivity implements DoOperationInterfa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        cacheWhenDoHelper1 = CacheWhenDoHelper.getInstance()
+        cacheWhenDoHelper1 = CommonCacheWhenDoHelper.getInstance()
                 //是否进行调试
                 .setDebug(true)
                 //延迟启动时间
@@ -83,7 +84,7 @@ public class MainActivity extends FragmentActivity implements DoOperationInterfa
                 .setDoOperationInterface(this)
                 .build();
 
-        cacheWhenDoHelper2 = CacheWhenDoHelper.getInstance()
+        cacheWhenDoHelper2 = CommonCacheWhenDoHelper.getInstance()
                 //是否进行调试
                 .setDebug(true)
                 .setAtFixed(false)
@@ -93,7 +94,7 @@ public class MainActivity extends FragmentActivity implements DoOperationInterfa
                 .setUnit(TimeUnit.MILLISECONDS)
                 .build();
 
-        cacheWhenDoHelper3 = CacheWhenDoHelper.getInstance()
+        cacheWhenDoHelper3 = SimpleCacheWhenDaHelper.getInstance()
                 //是否进行调试
                 .setDebug(true)
                 .setAtFixed(false)
@@ -106,11 +107,29 @@ public class MainActivity extends FragmentActivity implements DoOperationInterfa
                 .setDoOperationInterface(doOperationInterface3)
                 .build();
 
-        LiveEventBus.get(CacheWhenContants.LIVEEVENTBUS_KEY, EventDataBean.class)
-                .observe(this, new Observer<EventDataBean>() {
+        cacheWhenDoHelper4 = SimpleCacheWhenDaHelper.getInstance()
+                //是否进行调试
+                .setDebug(true)
+                //延迟启动时间
+                .setInitialDelay(1)
+                //循环执行是否等待上一个执行完毕
+                .setAtFixed(true)
+                //执行线程数
+                .setThreadCount(2)
+                //循环时间
+                .setPeriod(3)
+                //单位
+                .setUnit(TimeUnit.SECONDS)
+                // 停止方式,正在执行的任务会继续执行下去，没有被执行的则中断
+                .setShutdown(false)
+                .build();
+
+
+        LiveEventBus.get(CacheWhenContants.EventbusContants.COMMONCACHEWHENDO_EVENT, CommonEventDataBean.class)
+                .observe(this, new Observer<CommonEventDataBean>() {
                     @Override
-                    public void onChanged(EventDataBean eventDataBean) {
-                        ParameterCacheMy cloneData = (ParameterCacheMy) eventDataBean.getClone();
+                    public void onChanged(CommonEventDataBean eventDataBean) {
+                        ParameterCacheMy cloneData = (ParameterCacheMy) eventDataBean.getCacheBeanClone();
                         Log.i(TAG, "每一秒钟执行 拿到缓存数据，开始执行操作  cacheWhenDoHelper2  doOperation 回调  eventData："
                                 + JsonUtils.javabeanToJson(eventDataBean));
                         //此处模拟一个耗时操作
@@ -139,7 +158,37 @@ public class MainActivity extends FragmentActivity implements DoOperationInterfa
                     }
                 });
 
-        findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
+        LiveEventBus.get(CacheWhenContants.EventbusContants.SIMPLECACHEWHENDO_EVENT, SimpleEventDataBean.class)
+                .observe(this, new Observer<SimpleEventDataBean>() {
+                    @Override
+                    public void onChanged(SimpleEventDataBean eventDataBean) {
+                      int aInteger = (int) eventDataBean.getData();
+                        Log.i(TAG, "每一秒钟执行 拿到缓存数据，开始执行操作  cacheWhenDoHelper4  doOperation 回调  eventData："
+                                + JsonUtils.javabeanToJson(eventDataBean));
+                        //此处模拟一个耗时操作
+                        long count = 0;
+                        for (int i = 0; i < 100000; i++) {
+                            count += i + i + i;
+                        }
+
+                        for (int i = 0; i < 100000; i++) {
+                            count += (i + i + i) * 3 - i;
+                        }
+                        Log.d("TAG", "doOperation: " + count);
+
+                        List<String> eventIdList = eventDataBean.getIdList();
+                        Log.i(TAG, "每一秒钟执行 处理完成 cacheWhenDoHelper4  doOperation 回调 ：eventIdList:" + JsonUtils.javabeanToJson(eventIdList)
+                                + "\n 结果:" + aInteger + " count:"+ count);
+
+                        for (int i = 0; i < eventIdList.size(); i++) {
+                            String eventId = eventIdList.get(i);
+                            Log.i(TAG, "去做 " + eventId + "之后的事情");
+                        }
+                    }
+                });
+
+
+        findViewById(R.id.button1).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 test1();
@@ -160,6 +209,13 @@ public class MainActivity extends FragmentActivity implements DoOperationInterfa
         });
 
         findViewById(R.id.button4).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                test4();
+            }
+        });
+
+        findViewById(R.id.button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 cacheWhenDoHelper1.stop();
@@ -198,7 +254,30 @@ public class MainActivity extends FragmentActivity implements DoOperationInterfa
         });
     }
 
-    private void do1(CacheWhenDoHelper cacheWhenDoHelper) {
+    public void test4() {
+        do4(cacheWhenDoHelper4, 1);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                do4(cacheWhenDoHelper4,2);
+            }
+        }).start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                do4(cacheWhenDoHelper4,3);
+            }
+        }).start();
+    }
+
+
+
+    private void do1(CommonCacheWhenDoHelper cacheWhenDoHelper) {
         Log.i(TAG, "do1");
         /**
          * 执行操作
@@ -221,7 +300,7 @@ public class MainActivity extends FragmentActivity implements DoOperationInterfa
         });
     }
 
-    private void do2(CacheWhenDoHelper cacheWhenDoHelper) {
+    private void do2(CommonCacheWhenDoHelper cacheWhenDoHelper) {
         Log.i(TAG, "do2");
         cacheWhenDoHelper.doCacheWhen("do2", new OnCreateParameterCache() {
             @Override
@@ -238,9 +317,14 @@ public class MainActivity extends FragmentActivity implements DoOperationInterfa
         });
     }
 
-    private void do3(CacheWhenDoHelper cacheWhenDoHelper, String aString) {
+    private void do3(SimpleCacheWhenDaHelper cacheWhenDoHelper, String aString) {
         Log.i(TAG, "do3");
         cacheWhenDoHelper.doCacheWhen("do3", aString);
+    }
+
+    private void do4(SimpleCacheWhenDaHelper cacheWhenDoHelper, Integer aInteger) {
+        Log.i(TAG, "do4");
+        cacheWhenDoHelper.doCacheWhen("do4", aInteger);
     }
 
     /**

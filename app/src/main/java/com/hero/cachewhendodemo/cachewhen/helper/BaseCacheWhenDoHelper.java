@@ -1,16 +1,11 @@
-package com.hero.cachewhendodemo.cachewhen;
+package com.hero.cachewhendodemo.cachewhen.helper;
 
 import android.util.Log;
-
 import androidx.annotation.NonNull;
-
-import com.hero.cachewhendodemo.cachewhen.bean.base.BaseParameterCacheBean;
+import com.hero.cachewhendodemo.cachewhen.JsonUtils;
 import com.hero.cachewhendodemo.cachewhen.bean.CacheWhenDoDataBean;
-import com.hero.cachewhendodemo.cachewhen.bean.EventDataBean;
-import com.hero.cachewhendodemo.cachewhen.bean.SimpleParameterCacheBean;
-import com.hero.cachewhendodemo.cachewhen.inerfaces.OnCreateParameterCache;
-import com.jeremyliao.liveeventbus.LiveEventBus;
-
+import com.hero.cachewhendodemo.cachewhen.bean.base.BaseParameterCacheBean;
+import com.hero.cachewhendodemo.cachewhen.inerfaces.BuilderInterface;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -31,29 +26,27 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *      3、操作事件的处理接口：上下文为appcation时使用 DoOperationInterface；否则使用 LiveEventBus，防止内存泄漏
  * </pre>
  */
-public class CacheWhenDoHelper {
+public abstract class BaseCacheWhenDoHelper {
 
-    private static final String TAG = "CacheWhenDoHelper";
-    private Builder builder = new Builder();
+    protected String TAG = "CacheWhenDo";
+    protected BuilderInterface builderInterface = getNewBuilder();
 
-    public CacheWhenDoHelper(Builder builder) {
-        if (builder != null) {
-            this.builder = builder;
+    protected BaseCacheWhenDoHelper(BuilderInterface builderInterface) {
+        TAG = getClass().getSimpleName();
+        if (builderInterface != null) {
+            this.builderInterface = builderInterface;
         }
-
-        if (this.builder.isDebug) {
-            Log.i(TAG, "配置builder：" + JsonUtils.javabeanToJson(this.builder));
+        if (this.builderInterface.isDebug()) {
+            Log.i(TAG, "配置builder：" + JsonUtils.javabeanToJson(this.builderInterface));
         }
     }
 
-    public static Builder getInstance() {
-        return new Builder();
-    }
+    protected abstract BuilderInterface getNewBuilder();
 
     /**
      * 缓存数据 每次调用方法更新 id则保存起来 用于回调时使用
      */
-    private volatile CacheWhenDoDataBean cacheWhenDoDataBean;
+    protected volatile CacheWhenDoDataBean cacheWhenDoDataBean;
 
     /**
      * 用于记录每次调用方法的位置 用于回调时识别从哪里调用方法的
@@ -75,138 +68,28 @@ public class CacheWhenDoHelper {
     //获取读锁
     private Lock rLock = rwLock.readLock();
 
-    /**
-     * 执行操作
-     *
-     * @param idEvent  操作事件的id，记录执行操作的位置，操作回调会返回此id
-     * @param byteData 创建缓存数据，作为结果返回
-     */
-    public void doCacheWhen(@NonNull String idEvent, @NonNull Byte byteData) {
-        doCacheWhenCommon(idEvent, byteData);
-    }
-
-    /**
-     * 执行操作
-     *
-     * @param idEvent   操作事件的id，记录执行操作的位置，操作回调会返回此id
-     * @param shortData 创建缓存数据，作为结果返回
-     */
-    public void doCacheWhen(@NonNull String idEvent, @NonNull Short shortData) {
-        doCacheWhenCommon(idEvent, shortData);
-    }
-
-    /**
-     * 执行操作
-     *
-     * @param idEvent     操作事件的id，记录执行操作的位置，操作回调会返回此id
-     * @param integerData 创建缓存数据，作为结果返回
-     */
-    public void doCacheWhen(@NonNull String idEvent, @NonNull Integer integerData) {
-        doCacheWhenCommon(idEvent, integerData);
-    }
-
-    /**
-     * 执行操作
-     *
-     * @param idEvent  操作事件的id，记录执行操作的位置，操作回调会返回此id
-     * @param longData 创建缓存数据，作为结果返回
-     */
-    public void doCacheWhen(@NonNull String idEvent, @NonNull Long longData) {
-        doCacheWhenCommon(idEvent, longData);
-    }
-
-    /**
-     * 执行操作
-     *
-     * @param idEvent   操作事件的id，记录执行操作的位置，操作回调会返回此id
-     * @param floatData 创建缓存数据，作为结果返回
-     */
-    public void doCacheWhen(@NonNull String idEvent, @NonNull Float floatData) {
-        doCacheWhenCommon(idEvent, floatData);
-    }
-
-    /**
-     * 执行操作
-     *
-     * @param idEvent    操作事件的id，记录执行操作的位置，操作回调会返回此id
-     * @param doubleData 创建缓存数据，作为结果返回
-     */
-    public void doCacheWhen(@NonNull String idEvent, @NonNull Double doubleData) {
-        doCacheWhenCommon(idEvent, doubleData);
-    }
-
-    /**
-     * 执行操作
-     *
-     * @param idEvent     操作事件的id，记录执行操作的位置，操作回调会返回此id
-     * @param booleanData 创建缓存数据，作为结果返回
-     */
-    public void doCacheWhen(@NonNull String idEvent, @NonNull Boolean booleanData) {
-        doCacheWhenCommon(idEvent, booleanData);
-    }
-
-    /**
-     * 执行操作
-     *
-     * @param idEvent     操作事件的id，记录执行操作的位置，操作回调会返回此id
-     * @param stringData 创建缓存数据，作为结果返回
-     */
-    public void doCacheWhen(@NonNull String idEvent, @NonNull String stringData) {
-        doCacheWhenCommon(idEvent, stringData);
-    }
-
-    public void doCacheWhen(@NonNull String idEvent, @NonNull OnCreateParameterCache onCreateParameterCache) {
-        doCacheWhenCommon(idEvent, onCreateParameterCache);
-    }
-
-    private void doCacheWhenCommon(@NonNull String idEvent, @NonNull Object object) {
-        SimpleParameterCacheBean simpleParameterCacheBean = null;
-        if (object instanceof Integer) {
-            simpleParameterCacheBean = new SimpleParameterCacheBean((Integer) object);
-        } else if (object instanceof Long) {
-            simpleParameterCacheBean = new SimpleParameterCacheBean((Long) object);
-        } else if (object instanceof Double) {
-            simpleParameterCacheBean = new SimpleParameterCacheBean((Double) object);
-        } else if (object instanceof Float) {
-            simpleParameterCacheBean = new SimpleParameterCacheBean((Float) object);
-        }  else if (object instanceof Short) {
-            simpleParameterCacheBean = new SimpleParameterCacheBean((Short) object);
-        } else if (object instanceof Byte) {
-            simpleParameterCacheBean = new SimpleParameterCacheBean((Byte) object);
-        } else if (object instanceof Boolean) {
-            simpleParameterCacheBean = new SimpleParameterCacheBean((Boolean) object);
-        } else if (object instanceof String) {
-            simpleParameterCacheBean = new SimpleParameterCacheBean((String) object);
-        } else if (object instanceof OnCreateParameterCache) {
-            doCacheWhen(idEvent, ((OnCreateParameterCache) object).onCreateParameterCache());
-        }
-        if (simpleParameterCacheBean != null) {
-            doCacheWhen(idEvent, simpleParameterCacheBean);
-        }
-    }
-
-    private void doCacheWhen(@NonNull String idEvent, @NonNull BaseParameterCacheBean baseParameterCacheBean) {
-        if (builder.isDebug) {
+    protected void doCacheWhen(@NonNull String idEvent, @NonNull BaseParameterCacheBean baseParameterCacheBean) {
+        if (builderInterface.isDebug()) {
             Log.i(TAG, ("进入方法 doCacheWhen  idEvent:" + idEvent));
         }
 
         wlock.lock();
         try {
-            if (builder.isDebug) {
+            if (builderInterface.isDebug()) {
                 Log.i(TAG, ("准备缓存数据 上个数据: " + JsonUtils.javabeanToJson(cacheWhenDoDataBean)));
             }
             //此处已经赋值变量对应关系，第二次进入方法就已经赋值
             this.cacheWhenDoDataBean = new CacheWhenDoDataBean(idEvent, baseParameterCacheBean);
             eventIdList.add(cacheWhenDoDataBean.getId());
 
-            if (builder.isDebug) {
+            if (builderInterface.isDebug()) {
                 Log.i(TAG, "缓存数据: " + JsonUtils.javabeanToJson(cacheWhenDoDataBean)
                         + "\n eventIdList:" + JsonUtils.javabeanToJson(eventIdList));
             }
 
         } catch (Exception exception) {
             exception.printStackTrace();
-            if (builder.isDebug) {
+            if (builderInterface.isDebug()) {
                 Log.e(TAG, "进入方法 缓存 doCacheWhen", exception);
             }
         } finally {
@@ -227,7 +110,7 @@ public class CacheWhenDoHelper {
                     //复制一份
                     clone = data.clone();
                     copyEventIdList.addAll(eventIdList);
-                    if (builder.isDebug) {
+                    if (builderInterface.isDebug()) {
                         Log.i(TAG, "每一秒钟执行  复制一份 clone: " + JsonUtils.javabeanToJson(clone)
                                 + "\n copyEventIdList:" + JsonUtils.javabeanToJson(copyEventIdList));
                     }
@@ -237,36 +120,31 @@ public class CacheWhenDoHelper {
             cacheWhenDoDataBean = null;
         } catch (Exception exception) {
             exception.printStackTrace();
-            if (builder.isDebug) {
+            if (builderInterface.isDebug()) {
                 Log.e(TAG, "每一秒钟执行 复制并清除缓存 doWhen", exception);
             }
         } finally {
             wlock.unlock();
         }
-        if (builder.isDebug) {
+        if (builderInterface.isDebug()) {
             Log.i(TAG, "每一秒钟执行 清除缓存 cacheWhenDoData: " + JsonUtils.javabeanToJson(cacheWhenDoDataBean)
                     + "\n eventIdList:" + JsonUtils.javabeanToJson(eventIdList));
         }
 
         if (clone == null || copyEventIdList.isEmpty()) {
             stop();
-            if (builder.isDebug) {
+            if (builderInterface.isDebug()) {
                 Log.i(TAG, "每一秒钟执行 无缓存数据 停止");
             }
             return;
         }
-        if (builder.doOperationInterfaceWeakRef != null && builder.doOperationInterfaceWeakRef.get() != null) {
-            builder.doOperationInterfaceWeakRef.get().doOperation(clone, copyEventIdList);
-        } else {
-            EventDataBean eventDataBean = new EventDataBean();
-            eventDataBean.setClone(clone);
-            eventDataBean.setIdList(copyEventIdList);
-            LiveEventBus.get(CacheWhenContants.LIVEEVENTBUS_KEY).post(eventDataBean);
-        }
-        if (builder.isDebug) {
+        doOperation(clone, copyEventIdList);
+        if (builderInterface.isDebug()) {
             Log.i(TAG, "每一秒钟执行 执行完成或者已发送事件");
         }
     }
+
+    protected abstract void doOperation(BaseParameterCacheBean clone, List<String> copyEventIdList);
 
     /**
      *
@@ -276,46 +154,46 @@ public class CacheWhenDoHelper {
         try {
             //此处加锁并使用变量判断 防止 建立多个 scheduler 或者开启多次循环
             if (scheduler == null) {
-                scheduler = new ScheduledThreadPoolExecutor(builder.threadCount);
+                scheduler = new ScheduledThreadPoolExecutor(builderInterface.getThreadCount());
             }
             if (isSchedulering.compareAndSet(false, true)) {
                 //scheduleAtFixedRate:循环执行的任务。上一个任务开始的时间开始计时，假设定义period时间为2s，那么第一个任务开始2s后，检测上一个任务是否执行完毕：
                 //scheduleWithFixedDelay:循环执行的任务。以上一次任务执行时间为准，加上任务时间间隔作为下一次任务开始的时间。
-                if (builder.isAtFixed) {
+                if (builderInterface.isAtFixed()) {
                     scheduler.scheduleAtFixedRate(() -> {
                         Log.i(TAG, "每一秒钟执行start: ");
                         try {
-                            if (builder.isDebug) {
+                            if (builderInterface.isDebug()) {
                                 Log.i(TAG, "每一秒钟执行 start() Thread:" + Thread.currentThread() + " cacheWhenDoData ： " + JsonUtils.javabeanToJson(cacheWhenDoDataBean));
                             }
                             doWhen();
                         } catch (Exception e) {
                             e.printStackTrace();
-                            if (builder.isDebug) {
+                            if (builderInterface.isDebug()) {
                                 Log.e(TAG, "每一秒钟执行 start() scheduleAtFixedRate", e);
                             }
                         }
-                    }, builder.initialDelay, builder.period, builder.unit);
+                    }, builderInterface.getInitialDelay(), builderInterface.getPeriod(), builderInterface.getUnit());
                     return;
                 }
 
                 scheduler.scheduleWithFixedDelay(() -> {
                     try {
-                        if (builder.isDebug) {
+                        if (builderInterface.isDebug()) {
                             Log.i(TAG, "每一秒钟执行 start() Thread:" + Thread.currentThread() + " cacheWhenDoData ： " + JsonUtils.javabeanToJson(cacheWhenDoDataBean));
                         }
                         doWhen();
                     } catch (Exception e) {
                         e.printStackTrace();
-                        if (builder.isDebug) {
+                        if (builderInterface.isDebug()) {
                             Log.e(TAG, "每一秒钟执行 start() scheduleWithFixedDelay", e);
                         }
                     }
-                }, builder.initialDelay, builder.period, builder.unit);
+                }, builderInterface.getInitialDelay(), builderInterface.getPeriod(), builderInterface.getUnit());
             }
         } catch (Exception exception) {
             exception.printStackTrace();
-            if (builder.isDebug) {
+            if (builderInterface.isDebug()) {
                 Log.e(TAG, " start()", exception);
             }
         } finally {
@@ -327,7 +205,7 @@ public class CacheWhenDoHelper {
      *
      */
     public synchronized void stop() {
-        if (builder.isDebug) {
+        if (builderInterface.isDebug()) {
             Log.i(TAG, " stop()");
         }
 
@@ -337,7 +215,7 @@ public class CacheWhenDoHelper {
             if (scheduler != null) {
                 //shutdown只是将线程池的状态设置为SHUTWDOWN状态，正在执行的任务会继续执行下去，没有被执行的则中断。
                 //而shutdownNow则是将线程池的状态设置为STOP，正在执行的任务则被停止，没被执行任务的则返回。
-                if (builder.isShutdown) {
+                if (builderInterface.isShutdown()) {
                     scheduler.shutdown();
                 } else {
                     scheduler.shutdownNow();
@@ -346,7 +224,7 @@ public class CacheWhenDoHelper {
             scheduler = null;
         } catch (Exception exception) {
             exception.printStackTrace();
-            if (builder.isDebug) {
+            if (builderInterface.isDebug()) {
                 Log.e(TAG, " stop()", exception);
             }
         } finally {

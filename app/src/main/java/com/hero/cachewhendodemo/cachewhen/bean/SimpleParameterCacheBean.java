@@ -1,54 +1,31 @@
 package com.hero.cachewhendodemo.cachewhen.bean;
 
-import com.hero.cachewhendodemo.cachewhen.bean.base.BaseParameterCacheBean;
+import androidx.annotation.NonNull;
 
-import java.lang.reflect.Field;
+import com.hero.cachewhendodemo.cachewhen.bean.base.BaseParameterCacheBean;
 
 /**
  * 重写缓存类
+ * 传入数据类型必须为 除了char以外的基础数据类型和String类型
  * 保存操作的数据作为属性，可以自由包装
  */
 public class SimpleParameterCacheBean<T> extends BaseParameterCacheBean {
 
-    private Integer aInteger;
-    private Long aLong;
-    private Double aDouble;
-    private Float aFloat;
-    private Short aShort;
-    private Byte aByte;
-    private Boolean aBoolean;
-    private String aString;
+    private T t;
 
-    public SimpleParameterCacheBean(Integer aInteger) {
-        this.aInteger = aInteger;
-    }
+    public SimpleParameterCacheBean(@NonNull T t) {
+        if (!(t instanceof Integer)
+                && !(t instanceof Long)
+                && !(t instanceof Double)
+                && !(t instanceof Float)
+                && !(t instanceof Short)
+                && !(t instanceof Byte)
+                && !(t instanceof Boolean)
+                && !(t instanceof String)) {
+            throw new ClassCastException("非指定类型");
+        }
 
-    public SimpleParameterCacheBean(Long aLong) {
-        this.aLong = aLong;
-    }
-
-    public SimpleParameterCacheBean(Double aDouble) {
-        this.aDouble = aDouble;
-    }
-
-    public SimpleParameterCacheBean(Float aFloat) {
-        this.aFloat = aFloat;
-    }
-
-    public SimpleParameterCacheBean(Short aShort) {
-        this.aShort = aShort;
-    }
-
-    public SimpleParameterCacheBean(Byte aByte) {
-        this.aByte = aByte;
-    }
-
-    public SimpleParameterCacheBean(Boolean aBoolean) {
-        this.aBoolean = aBoolean;
-    }
-
-    public SimpleParameterCacheBean(String aString) {
-        this.aString = aString;
+        this.t = t;
     }
 
     /**
@@ -57,27 +34,8 @@ public class SimpleParameterCacheBean<T> extends BaseParameterCacheBean {
      * @return
      */
     public T getData() {
-        try {
-            Class clazz = this.getClass();
-            //能获取该类中所有的属性，但是不能获取父类的属性
-            Field[] fields = clazz.getDeclaredFields();
-            for (Field field : fields) {
-                //设置即使该属性是private，也可以进行访问(默认是false)
-                field.setAccessible(true);
-                Object value = field.get(this);
-                if (value == null) {
-                    continue;
-                }
-                T valueT = ((T) value);
-                return valueT;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return null;
+        return t;
     }
-
 
     /**
      * 此类一定要实现  复制一份数据，不影响原数据
@@ -86,44 +44,44 @@ public class SimpleParameterCacheBean<T> extends BaseParameterCacheBean {
      */
     @Override
     public SimpleParameterCacheBean clone() {
-        if (aInteger != null) {
-            Integer integerclone = Integer.valueOf(aInteger);
+        if (t instanceof Integer) {
+            Integer integerclone = Integer.valueOf((Integer) t);
             SimpleParameterCacheBean tSimpleParameterCacheBean = new SimpleParameterCacheBean(integerclone);
             return tSimpleParameterCacheBean;
         }
-        if (aLong != null) {
-            Long aLongClone = Long.valueOf(aLong);
+        if (t instanceof Long) {
+            Long aLongClone = Long.valueOf((Long) t);
             SimpleParameterCacheBean tSimpleParameterCacheBean = new SimpleParameterCacheBean(aLongClone);
             return tSimpleParameterCacheBean;
         }
-        if (aDouble != null) {
-            Double aDoubleClone = Double.valueOf(aDouble);
+        if (t instanceof Double) {
+            Double aDoubleClone = Double.valueOf((Double) t);
             SimpleParameterCacheBean tSimpleParameterCacheBean = new SimpleParameterCacheBean(aDoubleClone);
             return tSimpleParameterCacheBean;
         }
-        if (aFloat != null) {
-            Float aFloatClone = Float.valueOf(aFloat);
+        if (t instanceof Float) {
+            Float aFloatClone = Float.valueOf((Float) t);
             SimpleParameterCacheBean tSimpleParameterCacheBean = new SimpleParameterCacheBean(aFloatClone);
             return tSimpleParameterCacheBean;
         }
 
-        if (aShort != null) {
-            Short aShortClone = Short.valueOf(aShort);
+        if (t instanceof Short) {
+            Short aShortClone = Short.valueOf((Short) t);
             SimpleParameterCacheBean tSimpleParameterCacheBean = new SimpleParameterCacheBean(aShortClone);
             return tSimpleParameterCacheBean;
         }
-        if (aByte != null) {
-            Byte aByteClone = Byte.valueOf(aByte);
+        if (t instanceof Byte) {
+            Byte aByteClone = Byte.valueOf((Byte) t);
             SimpleParameterCacheBean tSimpleParameterCacheBean = new SimpleParameterCacheBean(aByteClone);
             return tSimpleParameterCacheBean;
         }
-        if (aBoolean != null) {
-            Boolean aBooleanClone = Boolean.valueOf((Boolean) aBoolean);
+        if (t instanceof Boolean) {
+            Boolean aBooleanClone = Boolean.valueOf((Boolean) t);
             SimpleParameterCacheBean tSimpleParameterCacheBean = new SimpleParameterCacheBean(aBooleanClone);
             return tSimpleParameterCacheBean;
         }
-        if (aString != null) {
-            String substring = new StringBuilder(aString).toString();
+        if (t instanceof String) {
+            String substring = new StringBuilder((String) t).toString();
             SimpleParameterCacheBean tSimpleParameterCacheBean = new SimpleParameterCacheBean(substring);
             return tSimpleParameterCacheBean;
         }
