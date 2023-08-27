@@ -1,4 +1,6 @@
-package com.hero.cachewhendodemo.cachewhen;
+package com.hero.cachewhendodemo.cachewhen.bean;
+
+import com.hero.cachewhendodemo.cachewhen.bean.base.BaseParameterCacheBean;
 
 import java.util.List;
 
@@ -7,15 +9,15 @@ import java.util.List;
  *
  * </pre>
  */
-public class EventData {
-    private ParameterCache clone;
+public class EventDataBean {
+    private BaseParameterCacheBean clone;
     private List<String> idList;
 
-    public ParameterCache getClone() {
+    public BaseParameterCacheBean getClone() {
         return clone;
     }
 
-    public void setClone( ParameterCache clone) {
+    public void setClone( BaseParameterCacheBean clone) {
         this.clone = clone;
     }
 

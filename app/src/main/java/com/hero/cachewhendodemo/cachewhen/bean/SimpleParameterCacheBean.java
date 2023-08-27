@@ -1,4 +1,6 @@
-package com.hero.cachewhendodemo.cachewhen;
+package com.hero.cachewhendodemo.cachewhen.bean;
+
+import com.hero.cachewhendodemo.cachewhen.bean.base.BaseParameterCacheBean;
 
 import java.lang.reflect.Field;
 
@@ -6,7 +8,7 @@ import java.lang.reflect.Field;
  * 重写缓存类
  * 保存操作的数据作为属性，可以自由包装
  */
-public class SimpleParameterCache<T> extends ParameterCache {
+public class SimpleParameterCacheBean<T> extends BaseParameterCacheBean {
 
     private Integer aInteger;
     private Long aLong;
@@ -17,35 +19,35 @@ public class SimpleParameterCache<T> extends ParameterCache {
     private Boolean aBoolean;
     private String aString;
 
-    public SimpleParameterCache(Integer aInteger) {
+    public SimpleParameterCacheBean(Integer aInteger) {
         this.aInteger = aInteger;
     }
 
-    public SimpleParameterCache(Long aLong) {
+    public SimpleParameterCacheBean(Long aLong) {
         this.aLong = aLong;
     }
 
-    public SimpleParameterCache(Double aDouble) {
+    public SimpleParameterCacheBean(Double aDouble) {
         this.aDouble = aDouble;
     }
 
-    public SimpleParameterCache(Float aFloat) {
+    public SimpleParameterCacheBean(Float aFloat) {
         this.aFloat = aFloat;
     }
 
-    public SimpleParameterCache(Short aShort) {
+    public SimpleParameterCacheBean(Short aShort) {
         this.aShort = aShort;
     }
 
-    public SimpleParameterCache(Byte aByte) {
+    public SimpleParameterCacheBean(Byte aByte) {
         this.aByte = aByte;
     }
 
-    public SimpleParameterCache(Boolean aBoolean) {
+    public SimpleParameterCacheBean(Boolean aBoolean) {
         this.aBoolean = aBoolean;
     }
 
-    public SimpleParameterCache(String aString) {
+    public SimpleParameterCacheBean(String aString) {
         this.aString = aString;
     }
 
@@ -83,47 +85,47 @@ public class SimpleParameterCache<T> extends ParameterCache {
      * @return
      */
     @Override
-    public SimpleParameterCache clone() {
+    public SimpleParameterCacheBean clone() {
         if (aInteger != null) {
             Integer integerclone = Integer.valueOf(aInteger);
-            SimpleParameterCache tSimpleParameterCache = new SimpleParameterCache(integerclone);
-            return tSimpleParameterCache;
+            SimpleParameterCacheBean tSimpleParameterCacheBean = new SimpleParameterCacheBean(integerclone);
+            return tSimpleParameterCacheBean;
         }
         if (aLong != null) {
             Long aLongClone = Long.valueOf(aLong);
-            SimpleParameterCache tSimpleParameterCache = new SimpleParameterCache(aLongClone);
-            return tSimpleParameterCache;
+            SimpleParameterCacheBean tSimpleParameterCacheBean = new SimpleParameterCacheBean(aLongClone);
+            return tSimpleParameterCacheBean;
         }
         if (aDouble != null) {
             Double aDoubleClone = Double.valueOf(aDouble);
-            SimpleParameterCache tSimpleParameterCache = new SimpleParameterCache(aDoubleClone);
-            return tSimpleParameterCache;
+            SimpleParameterCacheBean tSimpleParameterCacheBean = new SimpleParameterCacheBean(aDoubleClone);
+            return tSimpleParameterCacheBean;
         }
         if (aFloat != null) {
             Float aFloatClone = Float.valueOf(aFloat);
-            SimpleParameterCache tSimpleParameterCache = new SimpleParameterCache(aFloatClone);
-            return tSimpleParameterCache;
+            SimpleParameterCacheBean tSimpleParameterCacheBean = new SimpleParameterCacheBean(aFloatClone);
+            return tSimpleParameterCacheBean;
         }
 
         if (aShort != null) {
             Short aShortClone = Short.valueOf(aShort);
-            SimpleParameterCache tSimpleParameterCache = new SimpleParameterCache(aShortClone);
-            return tSimpleParameterCache;
+            SimpleParameterCacheBean tSimpleParameterCacheBean = new SimpleParameterCacheBean(aShortClone);
+            return tSimpleParameterCacheBean;
         }
         if (aByte != null) {
             Byte aByteClone = Byte.valueOf(aByte);
-            SimpleParameterCache tSimpleParameterCache = new SimpleParameterCache(aByteClone);
-            return tSimpleParameterCache;
+            SimpleParameterCacheBean tSimpleParameterCacheBean = new SimpleParameterCacheBean(aByteClone);
+            return tSimpleParameterCacheBean;
         }
         if (aBoolean != null) {
             Boolean aBooleanClone = Boolean.valueOf((Boolean) aBoolean);
-            SimpleParameterCache tSimpleParameterCache = new SimpleParameterCache(aBooleanClone);
-            return tSimpleParameterCache;
+            SimpleParameterCacheBean tSimpleParameterCacheBean = new SimpleParameterCacheBean(aBooleanClone);
+            return tSimpleParameterCacheBean;
         }
         if (aString != null) {
             String substring = new StringBuilder(aString).toString();
-            SimpleParameterCache tSimpleParameterCache = new SimpleParameterCache(substring);
-            return tSimpleParameterCache;
+            SimpleParameterCacheBean tSimpleParameterCacheBean = new SimpleParameterCacheBean(substring);
+            return tSimpleParameterCacheBean;
         }
 
         return null;

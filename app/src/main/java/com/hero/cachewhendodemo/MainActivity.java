@@ -9,12 +9,12 @@ import android.view.View;
 
 import com.hero.cachewhendodemo.cachewhen.CacheWhenContants;
 import com.hero.cachewhendodemo.cachewhen.CacheWhenDoHelper;
-import com.hero.cachewhendodemo.cachewhen.DoOperationInterface;
-import com.hero.cachewhendodemo.cachewhen.EventData;
+import com.hero.cachewhendodemo.cachewhen.inerfaces.DoOperationInterface;
+import com.hero.cachewhendodemo.cachewhen.bean.EventDataBean;
 import com.hero.cachewhendodemo.cachewhen.JsonUtils;
-import com.hero.cachewhendodemo.cachewhen.OnCreateParameterCache;
-import com.hero.cachewhendodemo.cachewhen.ParameterCache;
-import com.hero.cachewhendodemo.cachewhen.SimpleParameterCache;
+import com.hero.cachewhendodemo.cachewhen.inerfaces.OnCreateParameterCache;
+import com.hero.cachewhendodemo.cachewhen.bean.base.BaseParameterCacheBean;
+import com.hero.cachewhendodemo.cachewhen.bean.SimpleParameterCacheBean;
 import com.jeremyliao.liveeventbus.LiveEventBus;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,17 +28,17 @@ public class MainActivity extends FragmentActivity implements DoOperationInterfa
     private CacheWhenDoHelper cacheWhenDoHelper3;
     private DoOperationInterface doOperationInterface3 = new DoOperationInterface() {
         @Override
-        public void doOperation(ParameterCache cloneData, List<String> eventIdList) {
+        public void doOperation(BaseParameterCacheBean cloneData, List<String> eventIdList) {
             Log.i(TAG, "每一秒钟执行 拿到缓存数据，开始执行操作  cacheWhenDoHelper3  doOperation 回调  cloneData："
                     + JsonUtils.javabeanToJson(cloneData));
             if (cloneData == null) {
                 return;
             }
-            if (!(cloneData instanceof SimpleParameterCache)) {
+            if (!(cloneData instanceof SimpleParameterCacheBean)) {
                 return;
             }
             //获取参数 其中传入泛型要与参数类型一致
-            String data = ((SimpleParameterCache<String>) cloneData).getData();
+            String data = ((SimpleParameterCacheBean<String>) cloneData).getData();
             //此处模拟一个耗时操作
             int imax = 0;
             int jmax = 0;
@@ -106,13 +106,13 @@ public class MainActivity extends FragmentActivity implements DoOperationInterfa
                 .setDoOperationInterface(doOperationInterface3)
                 .build();
 
-        LiveEventBus.get(CacheWhenContants.LIVEEVENTBUS_KEY, EventData.class)
-                .observe(this, new Observer<EventData>() {
+        LiveEventBus.get(CacheWhenContants.LIVEEVENTBUS_KEY, EventDataBean.class)
+                .observe(this, new Observer<EventDataBean>() {
                     @Override
-                    public void onChanged(EventData eventData) {
-                        ParameterCacheMy cloneData = (ParameterCacheMy) eventData.getClone();
+                    public void onChanged(EventDataBean eventDataBean) {
+                        ParameterCacheMy cloneData = (ParameterCacheMy) eventDataBean.getClone();
                         Log.i(TAG, "每一秒钟执行 拿到缓存数据，开始执行操作  cacheWhenDoHelper2  doOperation 回调  eventData："
-                                + JsonUtils.javabeanToJson(eventData));
+                                + JsonUtils.javabeanToJson(eventDataBean));
                         //此处模拟一个耗时操作
                         long count = 0;
                         for (int i = 0; i < 100000; i++) {
@@ -125,7 +125,7 @@ public class MainActivity extends FragmentActivity implements DoOperationInterfa
                         Log.d("TAG", "doOperation: " + count);
 
                         List<String> dataList = cloneData.getData();
-                        List<String> eventIdList = eventData.getIdList();
+                        List<String> eventIdList = eventDataBean.getIdList();
                         for (int i = 0; i < dataList.size(); i++) {
                             dataList.set(i, "第" + i + "个结果:" + dataList.get(i));
                         }
@@ -208,7 +208,7 @@ public class MainActivity extends FragmentActivity implements DoOperationInterfa
          */
         cacheWhenDoHelper.doCacheWhen("do1", new OnCreateParameterCache() {
             @Override
-            public ParameterCache onCreateParameterCache() {
+            public BaseParameterCacheBean onCreateParameterCache() {
                 ParameterCacheMy parameterCacheMy = new ParameterCacheMy();
                 List<String> arrayList = new ArrayList();
                 for (int i = 0; i < 6; i++) {
@@ -225,7 +225,7 @@ public class MainActivity extends FragmentActivity implements DoOperationInterfa
         Log.i(TAG, "do2");
         cacheWhenDoHelper.doCacheWhen("do2", new OnCreateParameterCache() {
             @Override
-            public ParameterCache onCreateParameterCache() {
+            public BaseParameterCacheBean onCreateParameterCache() {
                 ParameterCacheMy parameterCacheMy = new ParameterCacheMy();
                 List<String> arrayList = new ArrayList();
                 for (int i = 0; i < 6; i++) {
@@ -250,7 +250,7 @@ public class MainActivity extends FragmentActivity implements DoOperationInterfa
      * @param eventIdList 调用事件列表
      */
     @Override
-    public void doOperation(ParameterCache cloneData, List<String> eventIdList) {
+    public void doOperation(BaseParameterCacheBean cloneData, List<String> eventIdList) {
         Log.i(TAG, "每一秒钟执行 拿到缓存数据，开始执行操作  cacheWhenDoHelper1  doOperation 回调  eventData："
                 + JsonUtils.javabeanToJson(cloneData)
                 + "\n eventIdList:" + JsonUtils.javabeanToJson(eventIdList));
@@ -282,7 +282,7 @@ public class MainActivity extends FragmentActivity implements DoOperationInterfa
      * 重写缓存类
      * 保存操作的数据作为属性，可以自由包装
      */
-    private static class ParameterCacheMy extends ParameterCache {
+    private static class ParameterCacheMy extends BaseParameterCacheBean {
         public List<String> getData() {
             return dataList;
         }

@@ -1,4 +1,6 @@
-package com.hero.cachewhendodemo.cachewhen;
+package com.hero.cachewhendodemo.cachewhen.inerfaces;
+
+import com.hero.cachewhendodemo.cachewhen.bean.base.BaseParameterCacheBean;
 
 import java.util.List;
 
@@ -12,5 +14,5 @@ public interface DoOperationInterface {
      * @param cloneData   复制之后的缓存数据
      * @param eventIdList 调用事件列表
      */
-    void doOperation(ParameterCache cloneData, List<String> eventIdList);
+    void doOperation(BaseParameterCacheBean cloneData, List<String> eventIdList);
 }

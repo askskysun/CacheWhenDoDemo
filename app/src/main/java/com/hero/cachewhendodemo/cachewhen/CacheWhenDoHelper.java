@@ -4,17 +4,18 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.hero.cachewhendodemo.cachewhen.bean.base.BaseParameterCacheBean;
+import com.hero.cachewhendodemo.cachewhen.bean.CacheWhenDoDataBean;
+import com.hero.cachewhendodemo.cachewhen.bean.EventDataBean;
+import com.hero.cachewhendodemo.cachewhen.bean.SimpleParameterCacheBean;
+import com.hero.cachewhendodemo.cachewhen.inerfaces.OnCreateParameterCache;
 import com.jeremyliao.liveeventbus.LiveEventBus;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -39,6 +40,7 @@ public class CacheWhenDoHelper {
         if (builder != null) {
             this.builder = builder;
         }
+
         if (this.builder.isDebug) {
             Log.i(TAG, "配置builder：" + JsonUtils.javabeanToJson(this.builder));
         }
@@ -51,7 +53,7 @@ public class CacheWhenDoHelper {
     /**
      * 缓存数据 每次调用方法更新 id则保存起来 用于回调时使用
      */
-    private volatile CacheWhenDoData cacheWhenDoData;
+    private volatile CacheWhenDoDataBean cacheWhenDoDataBean;
 
     /**
      * 用于记录每次调用方法的位置 用于回调时识别从哪里调用方法的
@@ -158,32 +160,32 @@ public class CacheWhenDoHelper {
     }
 
     private void doCacheWhenCommon(@NonNull String idEvent, @NonNull Object object) {
-        SimpleParameterCache simpleParameterCache = null;
+        SimpleParameterCacheBean simpleParameterCacheBean = null;
         if (object instanceof Integer) {
-            simpleParameterCache = new SimpleParameterCache((Integer) object);
+            simpleParameterCacheBean = new SimpleParameterCacheBean((Integer) object);
         } else if (object instanceof Long) {
-            simpleParameterCache = new SimpleParameterCache((Long) object);
+            simpleParameterCacheBean = new SimpleParameterCacheBean((Long) object);
         } else if (object instanceof Double) {
-            simpleParameterCache = new SimpleParameterCache((Double) object);
+            simpleParameterCacheBean = new SimpleParameterCacheBean((Double) object);
         } else if (object instanceof Float) {
-            simpleParameterCache = new SimpleParameterCache((Float) object);
+            simpleParameterCacheBean = new SimpleParameterCacheBean((Float) object);
         }  else if (object instanceof Short) {
-            simpleParameterCache = new SimpleParameterCache((Short) object);
+            simpleParameterCacheBean = new SimpleParameterCacheBean((Short) object);
         } else if (object instanceof Byte) {
-            simpleParameterCache = new SimpleParameterCache((Byte) object);
+            simpleParameterCacheBean = new SimpleParameterCacheBean((Byte) object);
         } else if (object instanceof Boolean) {
-            simpleParameterCache = new SimpleParameterCache((Boolean) object);
+            simpleParameterCacheBean = new SimpleParameterCacheBean((Boolean) object);
         } else if (object instanceof String) {
-            simpleParameterCache = new SimpleParameterCache((String) object);
+            simpleParameterCacheBean = new SimpleParameterCacheBean((String) object);
         } else if (object instanceof OnCreateParameterCache) {
             doCacheWhen(idEvent, ((OnCreateParameterCache) object).onCreateParameterCache());
         }
-        if (simpleParameterCache != null) {
-            doCacheWhen(idEvent, simpleParameterCache);
+        if (simpleParameterCacheBean != null) {
+            doCacheWhen(idEvent, simpleParameterCacheBean);
         }
     }
 
-    private void doCacheWhen(@NonNull String idEvent, @NonNull ParameterCache parameterCache) {
+    private void doCacheWhen(@NonNull String idEvent, @NonNull BaseParameterCacheBean baseParameterCacheBean) {
         if (builder.isDebug) {
             Log.i(TAG, ("进入方法 doCacheWhen  idEvent:" + idEvent));
         }
@@ -191,14 +193,14 @@ public class CacheWhenDoHelper {
         wlock.lock();
         try {
             if (builder.isDebug) {
-                Log.i(TAG, ("准备缓存数据 上个数据: " + JsonUtils.javabeanToJson(cacheWhenDoData)));
+                Log.i(TAG, ("准备缓存数据 上个数据: " + JsonUtils.javabeanToJson(cacheWhenDoDataBean)));
             }
             //此处已经赋值变量对应关系，第二次进入方法就已经赋值
-            this.cacheWhenDoData = new CacheWhenDoData(idEvent, parameterCache);
-            eventIdList.add(cacheWhenDoData.getId());
+            this.cacheWhenDoDataBean = new CacheWhenDoDataBean(idEvent, baseParameterCacheBean);
+            eventIdList.add(cacheWhenDoDataBean.getId());
 
             if (builder.isDebug) {
-                Log.i(TAG, "缓存数据: " + JsonUtils.javabeanToJson(cacheWhenDoData)
+                Log.i(TAG, "缓存数据: " + JsonUtils.javabeanToJson(cacheWhenDoDataBean)
                         + "\n eventIdList:" + JsonUtils.javabeanToJson(eventIdList));
             }
 
@@ -215,12 +217,12 @@ public class CacheWhenDoHelper {
     }
 
     private void doWhen() {
-        ParameterCache clone = null;
+        BaseParameterCacheBean clone = null;
         List<String> copyEventIdList = new ArrayList<>();
         wlock.lock();
         try {
-            if (cacheWhenDoData != null) {
-                ParameterCache data = cacheWhenDoData.getData();
+            if (cacheWhenDoDataBean != null) {
+                BaseParameterCacheBean data = cacheWhenDoDataBean.getData();
                 if (data != null) {
                     //复制一份
                     clone = data.clone();
@@ -232,7 +234,7 @@ public class CacheWhenDoHelper {
                 }
             }
             eventIdList.clear();
-            cacheWhenDoData = null;
+            cacheWhenDoDataBean = null;
         } catch (Exception exception) {
             exception.printStackTrace();
             if (builder.isDebug) {
@@ -242,7 +244,7 @@ public class CacheWhenDoHelper {
             wlock.unlock();
         }
         if (builder.isDebug) {
-            Log.i(TAG, "每一秒钟执行 清除缓存 cacheWhenDoData: " + JsonUtils.javabeanToJson(cacheWhenDoData)
+            Log.i(TAG, "每一秒钟执行 清除缓存 cacheWhenDoData: " + JsonUtils.javabeanToJson(cacheWhenDoDataBean)
                     + "\n eventIdList:" + JsonUtils.javabeanToJson(eventIdList));
         }
 
@@ -256,10 +258,10 @@ public class CacheWhenDoHelper {
         if (builder.doOperationInterfaceWeakRef != null && builder.doOperationInterfaceWeakRef.get() != null) {
             builder.doOperationInterfaceWeakRef.get().doOperation(clone, copyEventIdList);
         } else {
-            EventData eventData = new EventData();
-            eventData.setClone(clone);
-            eventData.setIdList(copyEventIdList);
-            LiveEventBus.get(CacheWhenContants.LIVEEVENTBUS_KEY).post(eventData);
+            EventDataBean eventDataBean = new EventDataBean();
+            eventDataBean.setClone(clone);
+            eventDataBean.setIdList(copyEventIdList);
+            LiveEventBus.get(CacheWhenContants.LIVEEVENTBUS_KEY).post(eventDataBean);
         }
         if (builder.isDebug) {
             Log.i(TAG, "每一秒钟执行 执行完成或者已发送事件");
@@ -284,7 +286,7 @@ public class CacheWhenDoHelper {
                         Log.i(TAG, "每一秒钟执行start: ");
                         try {
                             if (builder.isDebug) {
-                                Log.i(TAG, "每一秒钟执行 start() Thread:" + Thread.currentThread() + " cacheWhenDoData ： " + JsonUtils.javabeanToJson(cacheWhenDoData));
+                                Log.i(TAG, "每一秒钟执行 start() Thread:" + Thread.currentThread() + " cacheWhenDoData ： " + JsonUtils.javabeanToJson(cacheWhenDoDataBean));
                             }
                             doWhen();
                         } catch (Exception e) {
@@ -300,7 +302,7 @@ public class CacheWhenDoHelper {
                 scheduler.scheduleWithFixedDelay(() -> {
                     try {
                         if (builder.isDebug) {
-                            Log.i(TAG, "每一秒钟执行 start() Thread:" + Thread.currentThread() + " cacheWhenDoData ： " + JsonUtils.javabeanToJson(cacheWhenDoData));
+                            Log.i(TAG, "每一秒钟执行 start() Thread:" + Thread.currentThread() + " cacheWhenDoData ： " + JsonUtils.javabeanToJson(cacheWhenDoDataBean));
                         }
                         doWhen();
                     } catch (Exception e) {

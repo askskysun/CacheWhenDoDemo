@@ -6,6 +6,8 @@ package com.hero.cachewhendodemo.cachewhen;
  * </pre>
  */
 
+import com.hero.cachewhendodemo.cachewhen.inerfaces.DoOperationInterface;
+
 import java.lang.ref.WeakReference;
 import java.util.concurrent.TimeUnit;
 
