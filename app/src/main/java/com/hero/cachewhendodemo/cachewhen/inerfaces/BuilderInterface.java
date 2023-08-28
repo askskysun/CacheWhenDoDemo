@@ -8,7 +8,6 @@ import io.reactivex.rxjava3.core.Scheduler;
  * <pre>
  *
  * </pre>
- * Author by sunhaihong, Email 1910713921@qq.com, Date on 2023/8/27.
  */
 public interface BuilderInterface {
 

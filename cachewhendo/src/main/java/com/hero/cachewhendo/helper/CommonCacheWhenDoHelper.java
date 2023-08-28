@@ -1,17 +1,14 @@
-package com.hero.cachewhendodemo.cachewhen.helper;
+package com.hero.cachewhendo.helper;
 
 import androidx.annotation.NonNull;
-
-import com.hero.cachewhendodemo.cachewhen.CacheWhenContants;
-import com.hero.cachewhendodemo.cachewhen.bean.CommonEventDataBean;
-import com.hero.cachewhendodemo.cachewhen.bean.base.BaseParameterCacheBean;
-import com.hero.cachewhendodemo.cachewhen.builder.Builder;
-import com.hero.cachewhendodemo.cachewhen.inerfaces.CommonDoOperationInterface;
-import com.hero.cachewhendodemo.cachewhen.inerfaces.OnCreateParameterCache;
+import com.hero.cachewhendo.CacheWhenContants;
+import com.hero.cachewhendo.bean.CommonEventDataBean;
+import com.hero.cachewhendo.bean.base.BaseParameterCacheBean;
+import com.hero.cachewhendo.builder.Builder;
+import com.hero.cachewhendo.inerfaces.CommonDoOperationInterface;
+import com.hero.cachewhendo.inerfaces.OnCreateParameterCache;
 import com.jeremyliao.liveeventbus.LiveEventBus;
-
 import java.util.List;
-
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Scheduler;
 

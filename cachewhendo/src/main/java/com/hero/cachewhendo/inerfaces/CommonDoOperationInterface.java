@@ -1,6 +1,6 @@
-package com.hero.cachewhendodemo.cachewhen.inerfaces;
+package com.hero.cachewhendo.inerfaces;
 
-import com.hero.cachewhendodemo.cachewhen.bean.base.BaseParameterCacheBean;
+import com.hero.cachewhendo.bean.base.BaseParameterCacheBean;
 
 import java.util.List;
 

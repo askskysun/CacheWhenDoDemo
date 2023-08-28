@@ -1,6 +1,6 @@
-package com.hero.cachewhendodemo.cachewhen.bean;
+package com.hero.cachewhendo.bean;
 
-import com.hero.cachewhendodemo.cachewhen.bean.base.BaseParameterCacheBean;
+import com.hero.cachewhendo.bean.base.BaseParameterCacheBean;
 
 /**
  * <pre>

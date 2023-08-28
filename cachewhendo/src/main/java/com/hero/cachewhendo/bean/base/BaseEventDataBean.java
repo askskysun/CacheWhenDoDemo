@@ -1,4 +1,4 @@
-package com.hero.cachewhendodemo.cachewhen.bean.base;
+package com.hero.cachewhendo.bean.base;
 
 import java.util.List;
 

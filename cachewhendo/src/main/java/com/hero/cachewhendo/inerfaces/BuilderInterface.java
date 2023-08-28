@@ -1,7 +1,6 @@
-package com.hero.cachewhendodemo.cachewhen.inerfaces;
+package com.hero.cachewhendo.inerfaces;
 
 import java.util.concurrent.TimeUnit;
-
 import io.reactivex.rxjava3.core.Scheduler;
 
 /**

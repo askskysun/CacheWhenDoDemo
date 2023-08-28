@@ -1,11 +1,11 @@
-package com.hero.cachewhendodemo.cachewhen.helper;
+package com.hero.cachewhendo.helper;
 
 import android.util.Log;
 import androidx.annotation.NonNull;
-import com.hero.cachewhendodemo.cachewhen.JsonUtils;
-import com.hero.cachewhendodemo.cachewhen.bean.CacheWhenDoDataBean;
-import com.hero.cachewhendodemo.cachewhen.bean.base.BaseParameterCacheBean;
-import com.hero.cachewhendodemo.cachewhen.inerfaces.BuilderInterface;
+import com.hero.cachewhendo.JsonUtils;
+import com.hero.cachewhendo.bean.CacheWhenDoDataBean;
+import com.hero.cachewhendo.bean.base.BaseParameterCacheBean;
+import com.hero.cachewhendo.inerfaces.BuilderInterface;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;

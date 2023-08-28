@@ -1,10 +1,10 @@
-package com.hero.cachewhendodemo.cachewhen.builder;
+package com.hero.cachewhendo.builder;
 
 import android.util.Log;
-import com.hero.cachewhendodemo.cachewhen.helper.SimpleCacheWhenDaHelper;
-import com.hero.cachewhendodemo.cachewhen.inerfaces.BaseDoOperationInterface;
-import com.hero.cachewhendodemo.cachewhen.inerfaces.BuilderInterface;
-import com.hero.cachewhendodemo.cachewhen.inerfaces.SimpleDoOperationInterface;
+import com.hero.cachewhendo.helper.SimpleCacheWhenDaHelper;
+import com.hero.cachewhendo.inerfaces.BaseDoOperationInterface;
+import com.hero.cachewhendo.inerfaces.BuilderInterface;
+import com.hero.cachewhendo.inerfaces.SimpleDoOperationInterface;
 import java.util.concurrent.TimeUnit;
 import io.reactivex.rxjava3.core.Scheduler;
 

@@ -1,8 +1,7 @@
-package com.hero.cachewhendodemo.cachewhen.bean;
+package com.hero.cachewhendo.bean;
 
 import androidx.annotation.NonNull;
-
-import com.hero.cachewhendodemo.cachewhen.bean.base.BaseParameterCacheBean;
+import com.hero.cachewhendo.bean.base.BaseParameterCacheBean;
 
 /**
  * 重写缓存类

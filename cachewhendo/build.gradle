@@ -59,4 +59,10 @@ dependencies {
     //基于LiveData的事件总线，能避免不及时解除观察导致内存泄漏，可跨进程，缺点：无法移除事件，不适用于组件间事件/数据传递 详情查看 EventBusHelper 对比三种事件总线
     //https://github.com/JeremyLiao/LiveEventBus   详解：https://blog.csdn.net/augfun/article/details/109960387
     implementation 'io.github.jeremyliao:live-event-bus-x:1.8.0'
+
+    // RxJava
+    implementation "io.reactivex.rxjava3:rxjava:3.1.6"
+    // AutoDispose 2.x https://uber.github.io/AutoDispose/
+    implementation 'com.uber.autodispose2:autodispose-android:2.0.0'
+    implementation 'com.uber.autodispose2:autodispose-androidx-lifecycle:2.0.0'
 }

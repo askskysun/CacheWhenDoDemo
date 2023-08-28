@@ -1,4 +1,4 @@
-package com.hero.cachewhendodemo.cachewhen.inerfaces;
+package com.hero.cachewhendo.inerfaces;
 
 /**
  * 操作事件的处理接口
