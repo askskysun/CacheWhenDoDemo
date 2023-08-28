@@ -24,6 +24,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
 public class MainActivity extends FragmentActivity implements CommonDoOperationInterface {
 
     private String TAG = "MainActivity";
@@ -36,7 +39,8 @@ public class MainActivity extends FragmentActivity implements CommonDoOperationI
         public void doOperation(String cloneData, List<String> eventIdList) {
             Log.i(TAG, "每一秒钟执行 拿到缓存数据，开始执行操作  cacheWhenDoHelper3  doOperation 回调  cloneData："
                     + JsonUtils.javabeanToJson(cloneData));
-            if (cloneData == null) {
+            Log.i(TAG, "cacheWhenDoHelper3 回调线程  ：" + Thread.currentThread());
+            if (cloneData == null ) {
                 return;
             }
 
@@ -82,6 +86,7 @@ public class MainActivity extends FragmentActivity implements CommonDoOperationI
                 //操作事件的处理接口
                 //注意此处使用弱引用 所以不要以局部变量作为参数，否则很快被回收
                 .setDoOperationInterface(this)
+                .setScheduler(null)
                 .build();
 
         cacheWhenDoHelper2 = CommonCacheWhenDoHelper.getInstance()
@@ -91,6 +96,7 @@ public class MainActivity extends FragmentActivity implements CommonDoOperationI
                 .setThreadCount(9)
                 .setPeriod(200)
                 .setShutdown(true)
+                .setScheduler(AndroidSchedulers.mainThread())
                 .setUnit(TimeUnit.MILLISECONDS)
                 .build();
 
@@ -105,6 +111,7 @@ public class MainActivity extends FragmentActivity implements CommonDoOperationI
                 //操作事件的处理接口
                 //注意此处使用弱引用 所以不要以局部变量作为参数，否则很快被回收
                 .setDoOperationInterface(doOperationInterface3)
+                .setScheduler(Schedulers.io())
                 .build();
 
         cacheWhenDoHelper4 = SimpleCacheWhenDaHelper.getInstance()
@@ -122,6 +129,7 @@ public class MainActivity extends FragmentActivity implements CommonDoOperationI
                 .setUnit(TimeUnit.SECONDS)
                 // 停止方式,正在执行的任务会继续执行下去，没有被执行的则中断
                 .setShutdown(false)
+                .setScheduler(Schedulers.trampoline())
                 .build();
 
 
@@ -132,6 +140,7 @@ public class MainActivity extends FragmentActivity implements CommonDoOperationI
                         ParameterCacheMy cloneData = (ParameterCacheMy) eventDataBean.getCacheBeanClone();
                         Log.i(TAG, "每一秒钟执行 拿到缓存数据，开始执行操作  cacheWhenDoHelper2  doOperation 回调  eventData："
                                 + JsonUtils.javabeanToJson(eventDataBean));
+                        Log.i(TAG, "cacheWhenDoHelper2 回调线程  ：" + Thread.currentThread());
                         //此处模拟一个耗时操作
                         long count = 0;
                         for (int i = 0; i < 100000; i++) {
@@ -165,6 +174,7 @@ public class MainActivity extends FragmentActivity implements CommonDoOperationI
                       int aInteger = (int) eventDataBean.getData();
                         Log.i(TAG, "每一秒钟执行 拿到缓存数据，开始执行操作  cacheWhenDoHelper4  doOperation 回调  eventData："
                                 + JsonUtils.javabeanToJson(eventDataBean));
+                        Log.i(TAG, "cacheWhenDoHelper4 回调线程  ：" + Thread.currentThread());
                         //此处模拟一个耗时操作
                         long count = 0;
                         for (int i = 0; i < 100000; i++) {
@@ -338,6 +348,8 @@ public class MainActivity extends FragmentActivity implements CommonDoOperationI
         Log.i(TAG, "每一秒钟执行 拿到缓存数据，开始执行操作  cacheWhenDoHelper1  doOperation 回调  eventData："
                 + JsonUtils.javabeanToJson(cloneData)
                 + "\n eventIdList:" + JsonUtils.javabeanToJson(eventIdList));
+        Log.i(TAG, "cacheWhenDoHelper1 回调线程  ：" + Thread.currentThread());
+
         //此处模拟一个耗时操作
         long count = 0;
         for (int i = 0; i < 10000; i++) {
