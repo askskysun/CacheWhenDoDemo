@@ -8,37 +8,39 @@
     android:padding="30dp"
     tools:context=".MainActivity">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="FirstActivity" />
+
     <Button
         android:id="@+id/button1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="测试1" />
+        android:text="发送数据1" />
 
     <Button
         android:id="@+id/button2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="测试2" />
+        android:text="发送数据2" />
+
     <Button
         android:id="@+id/button3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="测试3" />
+        android:text="发送数据3" />
+
     <Button
         android:id="@+id/button4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="测试4" />
+        android:text="发送数据4" />
+
     <Button
         android:id="@+id/button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="停止所有" />
-
-    <Button
-        android:id="@+id/buttontoact"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="跳转使用rxjava实现界面" />
 
 </LinearLayout>

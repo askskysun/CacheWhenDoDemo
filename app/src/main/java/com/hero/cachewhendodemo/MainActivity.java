@@ -2,6 +2,8 @@ package com.hero.cachewhendodemo;
 
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.Observer;
+
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -86,6 +88,7 @@ public class MainActivity extends FragmentActivity implements CommonDoOperationI
                 //操作事件的处理接口
                 //注意此处使用弱引用 所以不要以局部变量作为参数，否则很快被回收
                 .setDoOperationInterface(this)
+                //设置处理线程 为null则为当前线程
                 .setScheduler(null)
                 .build();
 
@@ -230,6 +233,13 @@ public class MainActivity extends FragmentActivity implements CommonDoOperationI
             public void onClick(View v) {
                 cacheWhenDoHelper1.stop();
                 cacheWhenDoHelper2.stop();
+            }
+        });
+
+        findViewById(R.id.buttontoact).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this,FirstActivity.class));
             }
         });
     }
