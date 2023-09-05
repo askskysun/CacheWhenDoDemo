@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.hero.cachewhendodemo.FirstActivity;
+import com.hero.cachewhendodemo.WrLockHelper;
 import com.hero.cachewhendodemo.cachewhen.bean.base.BaseParameterCacheBean;
 import com.hero.cachewhendodemo.cachewhen.inerfaces.BuilderInterface;
 
@@ -14,7 +15,9 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import autodispose2.AutoDispose;
 import autodispose2.androidx.lifecycle.AndroidLifecycleScopeProvider;
@@ -36,7 +39,9 @@ public class RxCacheWhenDoHelper<T> {
     private Builder builder = new Builder();
     private ObservableEmitter<T> emitter;
     private Disposable subscribe;
-    private Lock reentrantLock = new ReentrantLock();
+    private Observable<T> tObservable;
+    private Observer<T> observer;
+//    private Lock reentrantLock = new ReentrantLock();
 
     public static Builder getInstance() {
         return new Builder();
@@ -46,6 +51,8 @@ public class RxCacheWhenDoHelper<T> {
      * 用于记录每次调用方法的位置 用于回调时识别从哪里调用方法的
      */
     private volatile CopyOnWriteArrayList<String> eventIdList = new CopyOnWriteArrayList<>();
+    private WrLockHelper subscribeWrLockHelper;
+    private WrLockHelper eventWrLockHelper;
 
     public RxCacheWhenDoHelper(Builder builder) {
         if (builder != null) {
@@ -54,8 +61,10 @@ public class RxCacheWhenDoHelper<T> {
         if (this.builder.isDebug()) {
             Log.i(TAG, "配置builder：" + builder.toString());
         }
+        subscribeWrLockHelper = new WrLockHelper();
+        eventWrLockHelper = new WrLockHelper();
 
-        Observable<T> tObservable = Observable.create(new ObservableOnSubscribe<T>() {
+        tObservable = Observable.create(new ObservableOnSubscribe<T>() {
             @Override
             public void subscribe(@NonNull ObservableEmitter<T> emitter) throws InterruptedException {
                 RxCacheWhenDoHelper.this.emitter = emitter;
@@ -63,11 +72,9 @@ public class RxCacheWhenDoHelper<T> {
         }).debounce(this.builder.getPeriod(), this.builder.getUnit())
                 .observeOn(this.builder.getScheduler());
 
-        LifecycleOwner lifecycleOwner = this.builder.getLifecycleOwner();
-
-        Observer<T> observer = new Observer<T>() {
+        observer = new Observer<T>() {
             @Override
-            public void onSubscribe(@NonNull Disposable d) {
+            public void onSubscribe(@NonNull Disposable subscribe) {
                 if (RxCacheWhenDoHelper.this.builder.isDebug()) {
                     Log.i(TAG, "onSubscribe: Thread:" + Thread.currentThread());
                 }
@@ -76,11 +83,34 @@ public class RxCacheWhenDoHelper<T> {
 
             @Override
             public void onNext(@NonNull T t) {
+                final boolean[] disposed = {false};
+                subscribeWrLockHelper.rlockDo(new WrLockHelper.OnDoInterface() {
+                    @Override
+                    public void onDo() {
+                        if (RxCacheWhenDoHelper.this.subscribe != null) {
+                            disposed[0] = RxCacheWhenDoHelper.this.subscribe.isDisposed();
+                        }
+                    }
+                });
+
                 if (RxCacheWhenDoHelper.this.builder.isDebug()) {
-                    Log.i(TAG, "onNext:Thread:" + Thread.currentThread() + "收到处理回调，在此处进行处理，数据为： " + t);
+                    Log.i(TAG, "onNext:Thread:" + Thread.currentThread() + "收到处理回调，在此处进行处理，disposed:" + disposed[0] + " 数据为： " + t);
                 }
+
+                if (disposed[0]) {
+                    return;
+                }
+
                 List<String> copyEventIdList = new ArrayList<>();
-                reentrantLock.lock();
+                eventWrLockHelper.wlockDo(new WrLockHelper.OnDoInterface() {
+                    @Override
+                    public void onDo() {
+                        copyEventIdList.addAll(eventIdList);
+                        eventIdList.clear();
+                    }
+                });
+
+               /* reentrantLock.lock();
                 try {
                     copyEventIdList.addAll(eventIdList);
                     eventIdList.clear();
@@ -91,7 +121,7 @@ public class RxCacheWhenDoHelper<T> {
                     }
                 } finally {
                     reentrantLock.unlock();
-                }
+                }*/
 
                 WhenDoCallBack whenDoCallBack = RxCacheWhenDoHelper.this.builder.getWhenDoCallBack();
                 if (whenDoCallBack != null) {
@@ -123,8 +153,16 @@ public class RxCacheWhenDoHelper<T> {
             }
         };
 
-        //AutoDispose的关键语句 防止内存泄漏
+    }
+
+    private void subscribe() {
+        if (subscribe != null && !subscribe.isDisposed()) {
+            return;
+        }
+
+        LifecycleOwner lifecycleOwner = this.builder.getLifecycleOwner();
         if (lifecycleOwner != null) {
+            //AutoDispose的关键语句 防止内存泄漏
             tObservable.to(AutoDispose.autoDisposable(AndroidLifecycleScopeProvider.from(lifecycleOwner)))
                     .subscribe(observer);
         } else {
@@ -136,8 +174,14 @@ public class RxCacheWhenDoHelper<T> {
         if (builder.isDebug()) {
             Log.i(TAG, "doCacheWhen idEvent：" + idEvent + " t:" + t);
         }
-
-        reentrantLock.lock();
+        subscribe();
+        eventWrLockHelper.wlockDo(new WrLockHelper.OnDoInterface() {
+            @Override
+            public void onDo() {
+                eventIdList.add(idEvent);
+            }
+        });
+       /* reentrantLock.lock();
         try {
             eventIdList.add(idEvent);
         } catch (Exception exception) {
@@ -147,11 +191,14 @@ public class RxCacheWhenDoHelper<T> {
             }
         } finally {
             reentrantLock.unlock();
-        }
+        }*/
 
         emitter.onNext(t);
     }
 
+    /**
+     * 停止 不能停止已经发送的数据
+     */
     public void stop() {
         if (builder.isDebug()) {
             Log.i(TAG, "stop()");

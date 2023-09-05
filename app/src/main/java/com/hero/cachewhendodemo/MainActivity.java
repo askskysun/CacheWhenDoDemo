@@ -80,7 +80,7 @@ public class MainActivity extends FragmentActivity implements CommonDoOperationI
                 //执行线程数
                 .setThreadCount(2)
                 //循环时间
-                .setPeriod(3)
+                .setPeriod(5)
                 //单位
                 .setUnit(TimeUnit.SECONDS)
                 // 停止方式,正在执行的任务会继续执行下去，没有被执行的则中断

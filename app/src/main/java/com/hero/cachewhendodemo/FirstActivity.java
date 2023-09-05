@@ -57,11 +57,12 @@ public class FirstActivity extends FragmentActivity {
                 .setWhenDoCallBack(whenDoCallBack)
                 //设置 owner 防止内存泄漏
                 .setLifecycleOwner(this)
-                //设置缓存时间
-                .setPeriod(2)
-                //设置
-                .setScheduler(AndroidSchedulers.mainThread())
+                //设置时间单位
                 .setUnit(TimeUnit.SECONDS)
+                //设置缓存时间
+                .setPeriod(5)
+                //设置处理线程  默认是当前线程
+                .setScheduler(AndroidSchedulers.mainThread())
                 .builder();
         findViewById(R.id.button1).setOnClickListener(new View.OnClickListener() {
             @Override
