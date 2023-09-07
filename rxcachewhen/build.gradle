@@ -29,7 +29,7 @@ android {
 
     task makeJar(type: Copy) {
         //删除存在的
-        delete 'build/libs/cachewhendo-1.0.jar'
+        delete 'build/libs/rxcachewhen-1.0.jar'
         //设置拷贝的文件
         from('build/intermediates/aar_main_jar/release/')
         //打进jar包后的文件目录
@@ -38,11 +38,10 @@ android {
         //include ,exclude参数来设置过滤
         include('classes.jar')
         //重命名
-        rename('classes.jar', 'cachewhendo-1.0.jar')
+        rename('classes.jar', 'rxcachewhen-1.0.jar')
     }
 
     makeJar.dependsOn(build)
-
 }
 
 dependencies {
@@ -53,13 +52,9 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
-    api 'com.google.code.gson:gson:2.8.5'
-    //viewModel和liveData
-    api 'androidx.lifecycle:lifecycle-extensions:2.0.0'
-    //基于LiveData的事件总线，能避免不及时解除观察导致内存泄漏，可跨进程，缺点：无法移除事件，不适用于组件间事件/数据传递 详情查看 EventBusHelper 对比三种事件总线
-    //https://github.com/JeremyLiao/LiveEventBus   详解：https://blog.csdn.net/augfun/article/details/109960387
-    api 'io.github.jeremyliao:live-event-bus-x:1.8.0'
-
     // RxJava
-    implementation "io.reactivex.rxjava3:rxjava:3.1.6"
+    api "io.reactivex.rxjava3:rxjava:3.1.6"
+    // AutoDispose 2.x https://uber.github.io/AutoDispose/
+    api 'com.uber.autodispose2:autodispose-android:2.0.0'
+    api 'com.uber.autodispose2:autodispose-androidx-lifecycle:2.0.0'
 }

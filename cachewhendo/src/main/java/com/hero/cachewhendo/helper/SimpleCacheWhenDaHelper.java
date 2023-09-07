@@ -1,4 +1,5 @@
 package com.hero.cachewhendo.helper;
+
 import androidx.annotation.NonNull;
 
 import com.hero.cachewhendo.CacheWhenContants;
@@ -6,10 +7,11 @@ import com.hero.cachewhendo.bean.SimpleEventDataBean;
 import com.hero.cachewhendo.bean.base.BaseParameterCacheBean;
 import com.hero.cachewhendo.bean.SimpleParameterCacheBean;
 import com.hero.cachewhendo.builder.SimpleBuilder;
-import com.hero.cachewhendo.helper.BaseCacheWhenDoHelper;
 import com.hero.cachewhendo.inerfaces.SimpleDoOperationInterface;
 import com.jeremyliao.liveeventbus.LiveEventBus;
+
 import java.util.List;
+
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.Scheduler;
 
@@ -18,6 +20,7 @@ import io.reactivex.rxjava3.core.Scheduler;
  * 简单处理类
  * 传入数据类型必须为 除了char以外的基础数据类型和String类型
  * </pre>
+ * Author by sunhaihong, Email 1910713921@qq.com, Date on 2023/8/27.
  */
 public class SimpleCacheWhenDaHelper<T> extends BaseCacheWhenDoHelper {
     public static SimpleBuilder getInstance() {

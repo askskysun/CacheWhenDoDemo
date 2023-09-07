@@ -1,3 +1,4 @@
 rootProject.name = "CacheWhenDoDemo"
 include ':app'
 include ':cachewhendo'
+include ':rxcachewhen'

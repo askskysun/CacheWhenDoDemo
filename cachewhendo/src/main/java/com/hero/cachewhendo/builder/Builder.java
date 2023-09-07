@@ -127,7 +127,9 @@ public class Builder implements BuilderInterface {
      * 注意此处使用弱引用 所以不要以局部变量作为参数，否则很快被回收
      */
     public Builder setDoOperationInterface(BaseDoOperationInterface doOperationInterface) {
-        doOperationInterfaceWeakRef = new WeakReference<>(doOperationInterface);
+        if (doOperationInterface != null) {
+            doOperationInterfaceWeakRef = new WeakReference<>(doOperationInterface);
+        }
         return this;
     }
 

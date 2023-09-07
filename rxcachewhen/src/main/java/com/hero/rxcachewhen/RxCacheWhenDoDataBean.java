@@ -1,4 +1,4 @@
-package com.hero.cachewhendodemo.rxcachewhen;
+package com.hero.rxcachewhen;
 
 import java.util.List;
 

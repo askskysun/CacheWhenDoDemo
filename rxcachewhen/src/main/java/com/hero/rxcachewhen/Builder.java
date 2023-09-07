@@ -1,15 +1,12 @@
-package com.hero.cachewhendodemo.rxcachewhen;
+package com.hero.rxcachewhen;
 
 import android.util.Log;
 
 import androidx.lifecycle.LifecycleOwner;
-
-import com.hero.cachewhendodemo.cachewhen.helper.CommonCacheWhenDoHelper;
-import com.hero.cachewhendodemo.cachewhen.inerfaces.BaseDoOperationInterface;
-
+import com.hero.rxcachewhen.OnWhenDoCallBack;
+import com.hero.rxcachewhen.RxCacheWhenDoHelper;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.TimeUnit;
-
 import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
@@ -28,17 +25,17 @@ public class Builder {
     /**
      * 循环时间
      */
-    private long period = 1;
+    private long period = 1000;
 
     /**
      * 单位
      */
-    private TimeUnit unit = TimeUnit.SECONDS;
+    private TimeUnit unit = TimeUnit.MILLISECONDS;
 
     /**
      * 操作事件的处理接口
      */
-    private WeakReference<WhenDoCallBack> doWhenDoCallBackWeakRef;
+    private WeakReference<OnWhenDoCallBack> doWhenDoCallBackWeakRef;
 
     /**
      * 执行线程 默认当前线程
@@ -59,7 +56,7 @@ public class Builder {
         return unit;
     }
 
-    public WhenDoCallBack getWhenDoCallBack() {
+    public OnWhenDoCallBack getWhenDoCallBack() {
         try {
             if (doWhenDoCallBackWeakRef != null) {
                 return doWhenDoCallBackWeakRef.get();
@@ -91,9 +88,9 @@ public class Builder {
      * 操作事件的处理接口
      * 注意此处使用弱引用 所以不要以局部变量作为参数，否则很快被回收
      */
-    public Builder setWhenDoCallBack(WhenDoCallBack whenDoCallBack) {
-        if (whenDoCallBack != null) {
-            doWhenDoCallBackWeakRef = new WeakReference<>(whenDoCallBack);
+    public Builder setWhenDoCallBack(OnWhenDoCallBack onWhenDoCallBack) {
+        if (onWhenDoCallBack != null) {
+            doWhenDoCallBackWeakRef = new WeakReference<>(onWhenDoCallBack);
         }
         return this;
     }

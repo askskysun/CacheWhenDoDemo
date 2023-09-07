@@ -1,27 +1,13 @@
-package com.hero.cachewhendodemo.rxcachewhen;
+package com.hero.rxcachewhen;
 
 import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LifecycleOwner;
-
-import com.hero.cachewhendodemo.FirstActivity;
-import com.hero.cachewhendodemo.WrLockHelper;
-import com.hero.cachewhendodemo.cachewhen.bean.base.BaseParameterCacheBean;
-import com.hero.cachewhendodemo.cachewhen.inerfaces.BuilderInterface;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import autodispose2.AutoDispose;
 import autodispose2.androidx.lifecycle.AndroidLifecycleScopeProvider;
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.ObservableEmitter;
 import io.reactivex.rxjava3.core.ObservableOnSubscribe;
@@ -41,7 +27,6 @@ public class RxCacheWhenDoHelper<T> {
     private Disposable subscribe;
     private Observable<T> tObservable;
     private Observer<T> observer;
-//    private Lock reentrantLock = new ReentrantLock();
 
     public static Builder getInstance() {
         return new Builder();
@@ -110,26 +95,13 @@ public class RxCacheWhenDoHelper<T> {
                     }
                 });
 
-               /* reentrantLock.lock();
-                try {
-                    copyEventIdList.addAll(eventIdList);
-                    eventIdList.clear();
-                } catch (Exception exception) {
-                    exception.printStackTrace();
-                    if (RxCacheWhenDoHelper.this.builder.isDebug()) {
-                        Log.e(TAG, " onNext()", exception);
-                    }
-                } finally {
-                    reentrantLock.unlock();
-                }*/
-
-                WhenDoCallBack whenDoCallBack = RxCacheWhenDoHelper.this.builder.getWhenDoCallBack();
-                if (whenDoCallBack != null) {
+                OnWhenDoCallBack onWhenDoCallBack = RxCacheWhenDoHelper.this.builder.getWhenDoCallBack();
+                if (onWhenDoCallBack != null) {
                     RxCacheWhenDoDataBean rxCacheWhenDoDataBean = new RxCacheWhenDoDataBean();
                     rxCacheWhenDoDataBean.setT(t);
                     rxCacheWhenDoDataBean.setEventIdList(copyEventIdList);
                     //此处如果需要不影响原数据，则在此克隆一份
-                    whenDoCallBack.onNext(rxCacheWhenDoDataBean);
+                    onWhenDoCallBack.onNext(rxCacheWhenDoDataBean);
                 }
             }
 
@@ -139,9 +111,9 @@ public class RxCacheWhenDoHelper<T> {
                     Log.i(TAG, "onError: Thread:" + Thread.currentThread() + " Throwable:" + e.toString());
                 }
 
-                WhenDoCallBack whenDoCallBack = RxCacheWhenDoHelper.this.builder.getWhenDoCallBack();
-                if (whenDoCallBack != null) {
-                    whenDoCallBack.onError(e);
+                OnWhenDoCallBack onWhenDoCallBack = RxCacheWhenDoHelper.this.builder.getWhenDoCallBack();
+                if (onWhenDoCallBack != null) {
+                    onWhenDoCallBack.onError(e);
                 }
             }
 
@@ -181,17 +153,6 @@ public class RxCacheWhenDoHelper<T> {
                 eventIdList.add(idEvent);
             }
         });
-       /* reentrantLock.lock();
-        try {
-            eventIdList.add(idEvent);
-        } catch (Exception exception) {
-            exception.printStackTrace();
-            if (builder.isDebug()) {
-                Log.e(TAG, " doCacheWhen()", exception);
-            }
-        } finally {
-            reentrantLock.unlock();
-        }*/
 
         emitter.onNext(t);
     }

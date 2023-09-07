@@ -1,4 +1,4 @@
-package com.hero.cachewhendodemo;
+package com.hero.rxcachewhen;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -8,7 +8,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * <pre>
  *
  * </pre>
- * Author by sunhaihong, Email 1910713921@qq.com, Date on 2023/9/5.
  */
 public class WrLockHelper {
 

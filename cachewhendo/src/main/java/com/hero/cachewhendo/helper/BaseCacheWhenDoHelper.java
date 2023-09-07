@@ -1,21 +1,20 @@
 package com.hero.cachewhendo.helper;
 
 import android.util.Log;
+
 import androidx.annotation.NonNull;
+
 import com.hero.cachewhendo.JsonUtils;
 import com.hero.cachewhendo.bean.CacheWhenDoDataBean;
 import com.hero.cachewhendo.bean.base.BaseParameterCacheBean;
 import com.hero.cachewhendo.inerfaces.BuilderInterface;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * <pre>
@@ -29,20 +28,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public abstract class BaseCacheWhenDoHelper {
 
     private String TAG = "CacheWhenDo";
-
-    protected BaseCacheWhenDoHelper(BuilderInterface builderInterface) {
-        TAG = getClass().getSimpleName();
-        if (builderInterface != null) {
-            this.builderInterface = builderInterface;
-        }
-        if (this.builderInterface.isDebug()) {
-            Log.i(TAG, "配置builder：" + builderInterface.toString());
-        }
-    }
-
-    protected abstract BuilderInterface getNewBuilder();
-
-    protected BuilderInterface builderInterface = getNewBuilder();
     /**
      * 缓存数据 每次调用方法更新 id则保存起来 用于回调时使用
      */
@@ -59,86 +44,85 @@ public abstract class BaseCacheWhenDoHelper {
      */
     private AtomicBoolean isSchedulering = new AtomicBoolean(false);
 
-    private Lock reentrantLock = new ReentrantLock();
+    private WrLockHelper wrLockHelper;
+    private ReentrantLockHelper reentrantLockHelper;
 
-    //读写锁
-    private ReadWriteLock rwLock = new ReentrantReadWriteLock();
-    //获取写锁
-    private Lock wlock = rwLock.writeLock();
-    //获取读锁
-    private Lock rLock = rwLock.readLock();
+    protected BaseCacheWhenDoHelper(BuilderInterface builderInterface) {
+        TAG = getClass().getSimpleName();
+        if (builderInterface != null) {
+            this.builderInterface = builderInterface;
+        }
+        if (this.builderInterface.isDebug()) {
+            Log.i(TAG, "配置builder：" + builderInterface.toString());
+        }
+        wrLockHelper = new WrLockHelper();
+        reentrantLockHelper = new ReentrantLockHelper();
+    }
+
+    protected abstract BuilderInterface getNewBuilder();
+
+    protected BuilderInterface builderInterface = getNewBuilder();
 
     protected void doCacheWhen(@NonNull String idEvent, @NonNull BaseParameterCacheBean baseParameterCacheBean) {
         if (builderInterface.isDebug()) {
             Log.i(TAG, ("进入方法 doCacheWhen  idEvent:" + idEvent));
         }
+        wrLockHelper.wLockDo(new WrLockHelper.OnDoInterface() {
+            @Override
+            public void onDo() {
+                if (builderInterface.isDebug()) {
+                    Log.i(TAG, ("准备缓存数据 上个数据: " + JsonUtils.javabeanToJson(cacheWhenDoDataBean)));
+                }
+                //此处已经赋值变量对应关系，第二次进入方法就已经赋值
+                BaseCacheWhenDoHelper.this.cacheWhenDoDataBean = new CacheWhenDoDataBean(idEvent, baseParameterCacheBean);
+                eventIdList.add(cacheWhenDoDataBean.getId());
 
-        wlock.lock();
-        try {
-            if (builderInterface.isDebug()) {
-                Log.i(TAG, ("准备缓存数据 上个数据: " + JsonUtils.javabeanToJson(cacheWhenDoDataBean)));
+                if (builderInterface.isDebug()) {
+                    Log.i(TAG, "缓存数据: " + JsonUtils.javabeanToJson(cacheWhenDoDataBean)
+                            + "\n eventIdList:" + JsonUtils.javabeanToJson(eventIdList));
+                }
             }
-            //此处已经赋值变量对应关系，第二次进入方法就已经赋值
-            this.cacheWhenDoDataBean = new CacheWhenDoDataBean(idEvent, baseParameterCacheBean);
-            eventIdList.add(cacheWhenDoDataBean.getId());
-
-            if (builderInterface.isDebug()) {
-                Log.i(TAG, "缓存数据: " + JsonUtils.javabeanToJson(cacheWhenDoDataBean)
-                        + "\n eventIdList:" + JsonUtils.javabeanToJson(eventIdList));
-            }
-
-        } catch (Exception exception) {
-            exception.printStackTrace();
-            if (builderInterface.isDebug()) {
-                Log.e(TAG, "进入方法 缓存 doCacheWhen", exception);
-            }
-        } finally {
-            wlock.unlock();
-        }
+        });
 
         start();
     }
 
     private void doWhen() {
-        BaseParameterCacheBean clone = null;
+        final BaseParameterCacheBean[] clone = {null};
         List<String> copyEventIdList = new ArrayList<>();
-        wlock.lock();
-        try {
-            if (cacheWhenDoDataBean != null) {
-                BaseParameterCacheBean data = cacheWhenDoDataBean.getData();
-                if (data != null) {
-                    //复制一份
-                    clone = data.clone();
-                    copyEventIdList.addAll(eventIdList);
-                    if (builderInterface.isDebug()) {
-                        Log.i(TAG, "每一秒钟执行  复制一份 clone: " + JsonUtils.javabeanToJson(clone)
-                                + "\n copyEventIdList:" + JsonUtils.javabeanToJson(copyEventIdList));
+        wrLockHelper.wLockDo(new WrLockHelper.OnDoInterface() {
+            @Override
+            public void onDo() {
+                if (cacheWhenDoDataBean != null) {
+                    BaseParameterCacheBean data = cacheWhenDoDataBean.getData();
+                    if (data != null) {
+                        //复制一份
+                        clone[0] = data.clone();
+                        copyEventIdList.addAll(eventIdList);
+                        if (builderInterface.isDebug()) {
+                            Log.i(TAG, "每一秒钟执行  复制一份 clone: " + JsonUtils.javabeanToJson(clone[0])
+                                    + "\n copyEventIdList:" + JsonUtils.javabeanToJson(copyEventIdList));
+                        }
                     }
                 }
+                eventIdList.clear();
+                cacheWhenDoDataBean = null;
             }
-            eventIdList.clear();
-            cacheWhenDoDataBean = null;
-        } catch (Exception exception) {
-            exception.printStackTrace();
-            if (builderInterface.isDebug()) {
-                Log.e(TAG, "每一秒钟执行 复制并清除缓存 doWhen", exception);
-            }
-        } finally {
-            wlock.unlock();
-        }
+        });
+
         if (builderInterface.isDebug()) {
             Log.i(TAG, "每一秒钟执行 清除缓存 cacheWhenDoData: " + JsonUtils.javabeanToJson(cacheWhenDoDataBean)
                     + "\n eventIdList:" + JsonUtils.javabeanToJson(eventIdList));
         }
 
-        if (clone == null || copyEventIdList.isEmpty()) {
+        if (clone[0] == null || copyEventIdList.isEmpty()) {
             stop();
             if (builderInterface.isDebug()) {
                 Log.i(TAG, "每一秒钟执行 无缓存数据 停止");
             }
             return;
         }
-        doOperation(clone, copyEventIdList);
+        doOperation(clone[0], copyEventIdList);
         if (builderInterface.isDebug()) {
             Log.i(TAG, "每一秒钟执行 执行完成或者已发送事件");
         }
@@ -150,55 +134,57 @@ public abstract class BaseCacheWhenDoHelper {
      *
      */
     private void start() {
-        reentrantLock.lock();
-        try {
-            //此处加锁并使用变量判断 防止 建立多个 scheduler 或者开启多次循环
-            if (scheduler == null) {
-                scheduler = new ScheduledThreadPoolExecutor(builderInterface.getThreadCount());
+        reentrantLockHelper.reentLockDo(new WrLockHelper.OnDoInterface() {
+            @Override
+            public void onDo() {
+                doStart();
             }
-            if (isSchedulering.compareAndSet(false, true)) {
-                //scheduleAtFixedRate:循环执行的任务。上一个任务开始的时间开始计时，假设定义period时间为2s，那么第一个任务开始2s后，检测上一个任务是否执行完毕：
-                //scheduleWithFixedDelay:循环执行的任务。以上一次任务执行时间为准，加上任务时间间隔作为下一次任务开始的时间。
-                if (builderInterface.isAtFixed()) {
-                    scheduler.scheduleAtFixedRate(() -> {
-                        Log.i(TAG, "每一秒钟执行start: ");
-                        try {
-                            if (builderInterface.isDebug()) {
-                                Log.i(TAG, "每一秒钟执行 start() Thread:" + Thread.currentThread() + " cacheWhenDoData ： " + JsonUtils.javabeanToJson(cacheWhenDoDataBean));
-                            }
-                            doWhen();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            if (builderInterface.isDebug()) {
-                                Log.e(TAG, "每一秒钟执行 start() scheduleAtFixedRate", e);
-                            }
-                        }
-                    }, builderInterface.getInitialDelay(), builderInterface.getPeriod(), builderInterface.getUnit());
-                    return;
-                }
+        });
+    }
 
-                scheduler.scheduleWithFixedDelay(() -> {
-                    try {
-                        if (builderInterface.isDebug()) {
-                            Log.i(TAG, "每一秒钟执行 start() Thread:" + Thread.currentThread() + " cacheWhenDoData ： " + JsonUtils.javabeanToJson(cacheWhenDoDataBean));
-                        }
-                        doWhen();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        if (builderInterface.isDebug()) {
-                            Log.e(TAG, "每一秒钟执行 start() scheduleWithFixedDelay", e);
-                        }
-                    }
-                }, builderInterface.getInitialDelay(), builderInterface.getPeriod(), builderInterface.getUnit());
-            }
-        } catch (Exception exception) {
-            exception.printStackTrace();
-            if (builderInterface.isDebug()) {
-                Log.e(TAG, " start()", exception);
-            }
-        } finally {
-            reentrantLock.unlock();
+    private void doStart() {
+        //此处加锁并使用变量判断 防止 建立多个 scheduler 或者开启多次循环
+        if (scheduler == null) {
+            scheduler = new ScheduledThreadPoolExecutor(builderInterface.getThreadCount());
         }
+        if (!isSchedulering.compareAndSet(false, true)) {
+            return;
+        }
+
+        //scheduleAtFixedRate:循环执行的任务。上一个任务开始的时间开始计时，假设定义period时间为2s，那么第一个任务开始2s后，检测上一个任务是否执行完毕：
+        //scheduleWithFixedDelay:循环执行的任务。以上一次任务执行时间为准，加上任务时间间隔作为下一次任务开始的时间。
+        if (builderInterface.isAtFixed()) {
+            scheduler.scheduleAtFixedRate(() -> {
+                Log.i(TAG, "每一秒钟执行start: ");
+                try {
+                    if (builderInterface.isDebug()) {
+                        Log.i(TAG, "每一秒钟执行 start() Thread:" + Thread.currentThread() + " cacheWhenDoData ： " + JsonUtils.javabeanToJson(cacheWhenDoDataBean));
+                    }
+                    doWhen();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    if (builderInterface.isDebug()) {
+                        Log.e(TAG, "每一秒钟执行 start() scheduleAtFixedRate", e);
+                    }
+                }
+            }, builderInterface.getInitialDelay(), builderInterface.getPeriod(), builderInterface.getUnit());
+            return;
+        }
+
+        scheduler.scheduleWithFixedDelay(() -> {
+            try {
+                if (builderInterface.isDebug()) {
+                    Log.i(TAG, "每一秒钟执行 start() Thread:" + Thread.currentThread() + " cacheWhenDoData ： " + JsonUtils.javabeanToJson(cacheWhenDoDataBean));
+                }
+                doWhen();
+            } catch (Exception e) {
+                e.printStackTrace();
+                if (builderInterface.isDebug()) {
+                    Log.e(TAG, "每一秒钟执行 start() scheduleWithFixedDelay", e);
+                }
+            }
+        }, builderInterface.getInitialDelay(), builderInterface.getPeriod(), builderInterface.getUnit());
+
     }
 
     /**
@@ -208,28 +194,22 @@ public abstract class BaseCacheWhenDoHelper {
         if (builderInterface.isDebug()) {
             Log.i(TAG, " stop()");
         }
-
-        reentrantLock.lock();
-        try {
-            isSchedulering.set(false);
-            if (scheduler != null) {
-                //shutdown只是将线程池的状态设置为SHUTWDOWN状态，正在执行的任务会继续执行下去，没有被执行的则中断。
-                //而shutdownNow则是将线程池的状态设置为STOP，正在执行的任务则被停止，没被执行任务的则返回。
-                if (builderInterface.isShutdown()) {
-                    scheduler.shutdown();
-                } else {
-                    scheduler.shutdownNow();
+        reentrantLockHelper.reentLockDo(new WrLockHelper.OnDoInterface() {
+            @Override
+            public void onDo() {
+                isSchedulering.set(false);
+                if (scheduler != null) {
+                    //shutdown只是将线程池的状态设置为SHUTWDOWN状态，正在执行的任务会继续执行下去，没有被执行的则中断。
+                    //而shutdownNow则是将线程池的状态设置为STOP，正在执行的任务则被停止，没被执行任务的则返回。
+                    if (builderInterface.isShutdown()) {
+                        scheduler.shutdown();
+                    } else {
+                        scheduler.shutdownNow();
+                    }
                 }
+                scheduler = null;
             }
-            scheduler = null;
-        } catch (Exception exception) {
-            exception.printStackTrace();
-            if (builderInterface.isDebug()) {
-                Log.e(TAG, " stop()", exception);
-            }
-        } finally {
-            reentrantLock.unlock();
-        }
+        });
     }
 }
 

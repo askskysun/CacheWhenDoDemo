@@ -1,4 +1,4 @@
-package com.hero.cachewhendodemo.rxcachewhen;
+package com.hero.rxcachewhen;
 
 import io.reactivex.rxjava3.annotations.NonNull;
 
@@ -7,7 +7,7 @@ import io.reactivex.rxjava3.annotations.NonNull;
  *
  * </pre>
  */
-public interface WhenDoCallBack<T> {
+public interface OnWhenDoCallBack<T> {
     void onNext(@NonNull RxCacheWhenDoDataBean<T> rxCacheWhenDoDataBean);
 
     void onError(@NonNull Throwable throwable);

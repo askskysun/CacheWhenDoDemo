@@ -3,25 +3,15 @@ package com.hero.cachewhendodemo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-
 import androidx.fragment.app.FragmentActivity;
-
-import com.hero.cachewhendodemo.cachewhen.JsonUtils;
-import com.hero.cachewhendodemo.rxcachewhen.RxCacheWhenDoDataBean;
-import com.hero.cachewhendodemo.rxcachewhen.RxCacheWhenDoHelper;
-import com.hero.cachewhendodemo.rxcachewhen.WhenDoCallBack;
-
+import com.hero.cachewhendo.JsonUtils;
+import com.hero.rxcachewhen.RxCacheWhenDoDataBean;
+import com.hero.rxcachewhen.RxCacheWhenDoHelper;
+import com.hero.rxcachewhen.OnWhenDoCallBack;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import autodispose2.AutoDispose;
-import autodispose2.androidx.lifecycle.AndroidLifecycleScopeProvider;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.annotations.NonNull;
-import io.reactivex.rxjava3.core.Observable;
-import io.reactivex.rxjava3.core.ObservableEmitter;
-import io.reactivex.rxjava3.core.ObservableOnSubscribe;
-import io.reactivex.rxjava3.core.Observer;
-import io.reactivex.rxjava3.disposables.Disposable;
 
 /**
  * <pre>
@@ -33,10 +23,18 @@ public class FirstActivity extends FragmentActivity {
     private RxCacheWhenDoHelper rxCacheWhenDoHelper;
     private int clickCount2;
     private int clickCount3;
-    private WhenDoCallBack whenDoCallBack = new WhenDoCallBack() {
+    private OnWhenDoCallBack onWhenDoCallBack = new OnWhenDoCallBack() {
         @Override
         public void onNext(@NonNull RxCacheWhenDoDataBean rxCacheWhenDoDataBean) {
             Log.i(TAG, "获得处理数据: " + JsonUtils.javabeanToJson(rxCacheWhenDoDataBean));
+
+            List<String> eventIdList = rxCacheWhenDoDataBean.getEventIdList();
+            if (eventIdList != null) {
+                for (int i = 0; i < eventIdList.size(); i++) {
+                    String eventId = eventIdList.get(i);
+                    Log.i(TAG, "处理: " + eventId + " 之后的事");
+                }
+            }
         }
 
         @Override
@@ -54,7 +52,7 @@ public class FirstActivity extends FragmentActivity {
                 .setDebug(true)
                 //操作事件的处理接口
                 //注意此处使用弱引用 所以不要以局部变量作为参数，否则很快被回收
-                .setWhenDoCallBack(whenDoCallBack)
+                .setWhenDoCallBack(onWhenDoCallBack)
                 //设置 owner 防止内存泄漏
                 .setLifecycleOwner(this)
                 //设置时间单位
@@ -94,10 +92,10 @@ public class FirstActivity extends FragmentActivity {
             }
         });
 
-        /*findViewById(R.id.button4).setOnClickListener(new View.OnClickListener() {
+       /* findViewById(R.id.button4).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                test4();
+
             }
         });*/
 
