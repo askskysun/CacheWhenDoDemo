@@ -130,21 +130,6 @@ public class RxCacheWhenDoHelper<T> {
             }
         };
 
-    }
-
-    private void subscribe() {
-        final boolean[] isDisposed = new boolean[1];
-        subscribeWrLockHelper.rLockDo(new WrLockHelper.OnDoInterface() {
-            @Override
-            public void onDo() {
-                 isDisposed[0] = subscribe == null || subscribe.isDisposed();
-            }
-        });
-
-        if (!isDisposed[0]) {
-            return;
-        }
-
         LifecycleOwner lifecycleOwner = this.builder.getLifecycleOwner();
         if (lifecycleOwner != null) {
             //AutoDispose的关键语句 防止内存泄漏
@@ -159,7 +144,6 @@ public class RxCacheWhenDoHelper<T> {
         if (builder.isDebug()) {
             Log.i(TAG, "doCacheWhen idEvent：" + idEvent + " t:" + t);
         }
-        subscribe();
         eventWrLockHelper.wLockDo(new WrLockHelper.OnDoInterface() {
             @Override
             public void onDo() {
