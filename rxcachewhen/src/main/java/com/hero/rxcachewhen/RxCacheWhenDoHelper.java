@@ -24,7 +24,7 @@ public class RxCacheWhenDoHelper<T> {
     private final String TAG = "RxCacheWhenDoHelper";
     private Builder builder = new Builder();
     private ObservableEmitter<T> emitter;
-    private Disposable subscribe;
+    private volatile Disposable subscribe;
     private Observable<T> tObservable;
     private Observer<T> observer;
 
@@ -63,13 +63,18 @@ public class RxCacheWhenDoHelper<T> {
                 if (RxCacheWhenDoHelper.this.builder.isDebug()) {
                     Log.i(TAG, "onSubscribe: Thread:" + Thread.currentThread());
                 }
-                RxCacheWhenDoHelper.this.subscribe = subscribe;
+                subscribeWrLockHelper.wLockDo(new WrLockHelper.OnDoInterface() {
+                    @Override
+                    public void onDo() {
+                        RxCacheWhenDoHelper.this.subscribe = subscribe;
+                    }
+                });
             }
 
             @Override
             public void onNext(@NonNull T t) {
                 final boolean[] disposed = {false};
-                subscribeWrLockHelper.rlockDo(new WrLockHelper.OnDoInterface() {
+                subscribeWrLockHelper.rLockDo(new WrLockHelper.OnDoInterface() {
                     @Override
                     public void onDo() {
                         if (RxCacheWhenDoHelper.this.subscribe != null) {
@@ -87,7 +92,7 @@ public class RxCacheWhenDoHelper<T> {
                 }
 
                 List<String> copyEventIdList = new ArrayList<>();
-                eventWrLockHelper.wlockDo(new WrLockHelper.OnDoInterface() {
+                eventWrLockHelper.wLockDo(new WrLockHelper.OnDoInterface() {
                     @Override
                     public void onDo() {
                         copyEventIdList.addAll(eventIdList);
@@ -128,7 +133,15 @@ public class RxCacheWhenDoHelper<T> {
     }
 
     private void subscribe() {
-        if (subscribe != null && !subscribe.isDisposed()) {
+        final boolean[] isDisposed = new boolean[1];
+        subscribeWrLockHelper.rLockDo(new WrLockHelper.OnDoInterface() {
+            @Override
+            public void onDo() {
+                 isDisposed[0] = subscribe == null || subscribe.isDisposed();
+            }
+        });
+
+        if (!isDisposed[0]) {
             return;
         }
 
@@ -147,7 +160,7 @@ public class RxCacheWhenDoHelper<T> {
             Log.i(TAG, "doCacheWhen idEvent：" + idEvent + " t:" + t);
         }
         subscribe();
-        eventWrLockHelper.wlockDo(new WrLockHelper.OnDoInterface() {
+        eventWrLockHelper.wLockDo(new WrLockHelper.OnDoInterface() {
             @Override
             public void onDo() {
                 eventIdList.add(idEvent);
@@ -164,9 +177,13 @@ public class RxCacheWhenDoHelper<T> {
         if (builder.isDebug()) {
             Log.i(TAG, "stop()");
         }
-
-        if (subscribe != null) {
-            subscribe.dispose();
-        }
+        subscribeWrLockHelper.wLockDo(new WrLockHelper.OnDoInterface() {
+            @Override
+            public void onDo() {
+                if (subscribe != null) {
+                    subscribe.dispose();
+                }
+            }
+        });
     }
 }

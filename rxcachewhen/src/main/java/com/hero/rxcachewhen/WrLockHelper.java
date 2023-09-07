@@ -18,8 +18,7 @@ public class WrLockHelper {
     //获取读锁
     private Lock rLock = rwLock.readLock();
 
-
-    public void wlockDo(OnDoInterface onDoInterface) {
+    public void wLockDo(OnDoInterface onDoInterface) {
         if (onDoInterface == null) {
             return;
         }
@@ -34,7 +33,7 @@ public class WrLockHelper {
         }
     }
 
-    public void rlockDo(OnDoInterface onDoInterface) {
+    public void rLockDo(OnDoInterface onDoInterface) {
         if (onDoInterface == null) {
             return;
         }
