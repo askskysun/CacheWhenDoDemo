@@ -68,7 +68,7 @@ public class FirstActivity extends FragmentActivity {
             @Override
             public void onClick(View v) {
                 Log.i(TAG, "onClick: button1");
-                rxCacheWhenDoHelper.doCacheWhen("button1", "button1");
+                rxCacheWhenDoHelper.doCacheWhen("buttonId1", "参数：button1");
             }
         });
         findViewById(R.id.button2).setOnClickListener(new View.OnClickListener() {

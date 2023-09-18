@@ -122,6 +122,7 @@ public class SecondActivity extends FragmentActivity {
                 .setPeriod(200)
                 .setShutdown(true)
                 .setUnit(TimeUnit.MILLISECONDS)
+                .setScheduler(Schedulers.io())
                 //操作事件的处理接口
                 .setDoOperationInterface(new SimpleDoOperationInterface<String>() {
                     @Override
@@ -152,7 +153,6 @@ public class SecondActivity extends FragmentActivity {
                         }
                     }
                 })
-                .setScheduler(Schedulers.io())
                 .build();
 
         cacheWhenDoHelper4 = SimpleCacheWhenDaHelper.getInstance()
@@ -332,7 +332,7 @@ public class SecondActivity extends FragmentActivity {
          * 执行操作
          * 一个CacheWhenDoHelper对象只能传一种 参数类型
          * @param idEvent   操作事件的id，记录执行操作的位置，操作回调会返回此id
-         * @param onCreateParameterCache   创建缓存数据，作为结果返回
+         * @param onCreateParameterCache  操作处理的参数 / 创建缓存数据，作为结果返回
          */
         cacheWhenDoHelper.doCacheWhen("do1", new OnCreateParameterCache() {
             @Override
