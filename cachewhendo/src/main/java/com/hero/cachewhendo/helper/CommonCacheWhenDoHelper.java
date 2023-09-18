@@ -39,7 +39,7 @@ public class CommonCacheWhenDoHelper extends BaseCacheWhenDoHelper {
     }
 
     @Override
-    protected Builder getNewBuilder() {
+    protected Builder getDefauseBuilder() {
         return new Builder();
     }
 

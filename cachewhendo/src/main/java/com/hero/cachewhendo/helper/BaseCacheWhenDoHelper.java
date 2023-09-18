@@ -3,6 +3,10 @@ package com.hero.cachewhendo.helper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleEventObserver;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.LifecycleOwner;
 
 import com.hero.cachewhendo.JsonUtils;
 import com.hero.cachewhendo.bean.CacheWhenDoDataBean;
@@ -57,11 +61,33 @@ public abstract class BaseCacheWhenDoHelper {
         }
         wrLockHelper = new WrLockHelper();
         reentrantLockHelper = new ReentrantLockHelper();
+        //监听生命周期  防止内存泄漏
+        addLifecycleObserver(builderInterface);
     }
 
-    protected abstract BuilderInterface getNewBuilder();
+    private void addLifecycleObserver(BuilderInterface builderInterface) {
+        LifecycleOwner lifecycleOwner = builderInterface.getLifecycleOwner();
+        if (lifecycleOwner == null) {
+            return;
+        }
+        Lifecycle lifecycle = lifecycleOwner.getLifecycle();
+        if (lifecycle == null) {
+            return;
+        }
+        lifecycle.addObserver(new LifecycleEventObserver() {
+            @Override
+            public void onStateChanged(@NonNull LifecycleOwner source, @NonNull Lifecycle.Event event) {
+                //界面已经销毁则停止
+                if (Lifecycle.Event.ON_DESTROY == event) {
+                    stop(true);
+                }
+            }
+        });
+    }
 
-    protected BuilderInterface builderInterface = getNewBuilder();
+    protected abstract BuilderInterface getDefauseBuilder();
+
+    protected BuilderInterface builderInterface = getDefauseBuilder();
 
     protected void doCacheWhen(@NonNull String idEvent, @NonNull BaseParameterCacheBean baseParameterCacheBean) {
         if (builderInterface.isDebug()) {
@@ -184,13 +210,14 @@ public abstract class BaseCacheWhenDoHelper {
                 }
             }
         }, builderInterface.getInitialDelay(), builderInterface.getPeriod(), builderInterface.getUnit());
-
     }
 
-    /**
-     *
-     */
-    public synchronized void stop() {
+
+    public void stop() {
+        stop(false);
+    }
+
+    private void stop(boolean isDestroy) {
         if (builderInterface.isDebug()) {
             Log.i(TAG, " stop()");
         }
@@ -201,7 +228,7 @@ public abstract class BaseCacheWhenDoHelper {
                 if (scheduler != null) {
                     //shutdown只是将线程池的状态设置为SHUTWDOWN状态，正在执行的任务会继续执行下去，没有被执行的则中断。
                     //而shutdownNow则是将线程池的状态设置为STOP，正在执行的任务则被停止，没被执行任务的则返回。
-                    if (builderInterface.isShutdown()) {
+                    if (builderInterface.isShutdown() && !isDestroy) {
                         scheduler.shutdown();
                     } else {
                         scheduler.shutdownNow();

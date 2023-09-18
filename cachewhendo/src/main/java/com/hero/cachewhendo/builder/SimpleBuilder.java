@@ -1,6 +1,9 @@
 package com.hero.cachewhendo.builder;
 
 import android.util.Log;
+
+import androidx.lifecycle.LifecycleOwner;
+
 import com.hero.cachewhendo.helper.SimpleCacheWhenDaHelper;
 import com.hero.cachewhendo.inerfaces.BaseDoOperationInterface;
 import com.hero.cachewhendo.inerfaces.BuilderInterface;
@@ -11,9 +14,8 @@ import io.reactivex.rxjava3.core.Scheduler;
 /**
  * <pre>
  * 简单数据类型的配置
- * 使用组合代替继承
+ * 使用组合代替继承  装饰者模式  需要原始类和装饰类需要继承统一个抽象类或者实现统一个接口
  * </pre>
- * Author by sunhaihong, Email 1910713921@qq.com, Date on 2023/8/27.
  */
 public class SimpleBuilder implements BuilderInterface {
 
@@ -28,6 +30,11 @@ public class SimpleBuilder implements BuilderInterface {
     @Override
     public boolean isDebug() {
         return builder.isDebug();
+    }
+
+    @Override
+    public LifecycleOwner getLifecycleOwner() {
+        return builder.getLifecycleOwner();
     }
 
     @Override
@@ -101,7 +108,6 @@ public class SimpleBuilder implements BuilderInterface {
     }
     /**
      * 操作事件的处理接口
-     * 注意此处使用弱引用 所以不要以局部变量作为参数，否则很快被回收
      */
     public SimpleBuilder setDoOperationInterface(SimpleDoOperationInterface doOperationInterface) {
         builder.setDoOperationInterface(doOperationInterface);

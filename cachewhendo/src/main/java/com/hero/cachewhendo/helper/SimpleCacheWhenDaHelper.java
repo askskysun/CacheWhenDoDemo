@@ -32,7 +32,7 @@ public class SimpleCacheWhenDaHelper<T> extends BaseCacheWhenDoHelper {
     }
 
     @Override
-    protected SimpleBuilder getNewBuilder() {
+    protected SimpleBuilder getDefauseBuilder() {
         return new SimpleBuilder();
     }
 

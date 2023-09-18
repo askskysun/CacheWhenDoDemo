@@ -1,11 +1,14 @@
 package com.hero.cachewhendo.builder;
 
-import android.util.Log;
+
+import androidx.lifecycle.LifecycleOwner;
+
 import com.hero.cachewhendo.helper.CommonCacheWhenDoHelper;
 import com.hero.cachewhendo.inerfaces.BaseDoOperationInterface;
 import com.hero.cachewhendo.inerfaces.BuilderInterface;
-import java.lang.ref.WeakReference;
+
 import java.util.concurrent.TimeUnit;
+
 import io.reactivex.rxjava3.core.Scheduler;
 
 /**
@@ -19,6 +22,8 @@ public class Builder implements BuilderInterface {
      * 是否调试 执行时打印对应日志
      */
     private boolean isDebug;
+
+    private LifecycleOwner owner;
 
     /**
      * 停止方式,正在执行的任务会继续执行下去，没有被执行的则中断   false 为 shutdownNow
@@ -53,7 +58,7 @@ public class Builder implements BuilderInterface {
     /**
      * 操作事件的处理接口
      */
-    private WeakReference<BaseDoOperationInterface> doOperationInterfaceWeakRef;
+    private BaseDoOperationInterface doOperationInterface;
 
     /**
      * 执行线程 默认当前线程
@@ -64,6 +69,11 @@ public class Builder implements BuilderInterface {
     @Override
     public boolean isDebug() {
         return isDebug;
+    }
+
+    @Override
+    public LifecycleOwner getLifecycleOwner() {
+        return owner;
     }
 
     @Override
@@ -98,18 +108,7 @@ public class Builder implements BuilderInterface {
 
     @Override
     public BaseDoOperationInterface getDoOperationInterface() {
-        try {
-            if (doOperationInterfaceWeakRef != null) {
-                return doOperationInterfaceWeakRef.get();
-            }
-        } catch (Exception exception) {
-            exception.printStackTrace();
-            if (isDebug) {
-                Log.e(TAG, "getDoOperationInterface", exception);
-            }
-        }
-
-        return null;
+        return doOperationInterface;
     }
 
     @Override
@@ -122,14 +121,16 @@ public class Builder implements BuilderInterface {
         return this;
     }
 
+    public Builder setLifecycleOwner(LifecycleOwner owner) {
+        this.owner = owner;
+        return this;
+    }
+
     /**
      * 操作事件的处理接口
-     * 注意此处使用弱引用 所以不要以局部变量作为参数，否则很快被回收
      */
     public Builder setDoOperationInterface(BaseDoOperationInterface doOperationInterface) {
-        if (doOperationInterface != null) {
-            doOperationInterfaceWeakRef = new WeakReference<>(doOperationInterface);
-        }
+        this.doOperationInterface = doOperationInterface;
         return this;
     }
 

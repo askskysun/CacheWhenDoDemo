@@ -1,5 +1,7 @@
 package com.hero.cachewhendo.inerfaces;
 
+import androidx.lifecycle.LifecycleOwner;
+
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.core.Scheduler;
@@ -15,6 +17,8 @@ public interface BuilderInterface {
      * 是否调试
      */
     boolean isDebug();
+
+    LifecycleOwner getLifecycleOwner();
 
     /**
      * 停止方式,正在执行的任务会继续执行下去，没有被执行的则中断   false 为 shutdownNow

@@ -1,12 +1,8 @@
 package com.hero.rxcachewhen;
 
-import android.util.Log;
-
 import androidx.lifecycle.LifecycleOwner;
-import com.hero.rxcachewhen.OnWhenDoCallBack;
-import com.hero.rxcachewhen.RxCacheWhenDoHelper;
-import java.lang.ref.WeakReference;
 import java.util.concurrent.TimeUnit;
+
 import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
@@ -35,7 +31,7 @@ public class Builder {
     /**
      * 操作事件的处理接口
      */
-    private WeakReference<OnWhenDoCallBack> doWhenDoCallBackWeakRef;
+    private OnWhenDoCallBack onWhenDoCallBack;
 
     /**
      * 执行线程 默认当前线程
@@ -57,18 +53,7 @@ public class Builder {
     }
 
     public OnWhenDoCallBack getWhenDoCallBack() {
-        try {
-            if (doWhenDoCallBackWeakRef != null) {
-                return doWhenDoCallBackWeakRef.get();
-            }
-        } catch (Exception exception) {
-            exception.printStackTrace();
-            if (isDebug) {
-                Log.e(TAG, "getWhenDoCallBack", exception);
-            }
-        }
-
-        return null;
+        return onWhenDoCallBack;
     }
 
     public Scheduler getScheduler() {
@@ -86,12 +71,9 @@ public class Builder {
 
     /**
      * 操作事件的处理接口
-     * 注意此处使用弱引用 所以不要以局部变量作为参数，否则很快被回收
      */
     public Builder setWhenDoCallBack(OnWhenDoCallBack onWhenDoCallBack) {
-        if (onWhenDoCallBack != null) {
-            doWhenDoCallBackWeakRef = new WeakReference<>(onWhenDoCallBack);
-        }
+        this.onWhenDoCallBack = onWhenDoCallBack;
         return this;
     }
 
@@ -116,6 +98,11 @@ public class Builder {
         return this;
     }
 
+    /**
+     * 内部已有判断  可以传空值
+     * @param owner
+     * @return
+     */
     public Builder setLifecycleOwner(LifecycleOwner owner) {
         this.owner = owner;
         return this;
