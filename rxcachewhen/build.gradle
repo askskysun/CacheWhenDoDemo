@@ -42,6 +42,10 @@ android {
     }
 
     makeJar.dependsOn(build)
+
+    apply plugin: 'com.github.dcendents.android-maven'
+    // 使用github（group = 'com.github.你的github昵称'）时这一行可有可无 使用码云时要加上
+    group = 'com.gitee.DragonStream'
 }
 
 dependencies {
