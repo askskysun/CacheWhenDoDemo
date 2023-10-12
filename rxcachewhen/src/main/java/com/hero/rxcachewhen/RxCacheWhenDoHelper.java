@@ -1,11 +1,14 @@
 package com.hero.rxcachewhen;
 
 import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LifecycleOwner;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+
 import autodispose2.AutoDispose;
 import autodispose2.androidx.lifecycle.AndroidLifecycleScopeProvider;
 import io.reactivex.rxjava3.core.Observable;
@@ -151,7 +154,18 @@ public class RxCacheWhenDoHelper<T> {
             }
         });
 
-        emitter.onNext(t);
+        subscribeWrLockHelper.rLockDo(new WrLockHelper.OnDoInterface() {
+            @Override
+            public void onDo() {
+                if (subscribe == null || emitter == null) {
+                    return;
+                }
+                if (subscribe.isDisposed() || emitter.isDisposed()) {
+                    return;
+                }
+                emitter.onNext(t);
+            }
+        });
     }
 
     /**
